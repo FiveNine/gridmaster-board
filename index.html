@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gridmaster Leaks and Speculation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2e4963 0%, #272036 100%);
+            padding: 20px;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        .flip-btn {
+            background: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .flip-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.3);
+        }
+
+        .flip-btn:active {
+            transform: translateY(0);
+        }
+
+        .board-container {
+            perspective: 1000px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 76px);
+            grid-template-rows: repeat(8, 76px);
+            gap: 4px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .tile {
+            width: 76px;
+            height: 76px;
+            position: relative;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            transition: transform 0.6s;
+        }
+
+        .tile.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .tile-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border: 3px solid transparent;
+        }
+
+        .tile-face.bordered {
+            border: 3px solid;
+        }
+
+        .tile-front {
+            transform: rotateY(0deg);
+        }
+
+        .tile-back {
+            transform: rotateY(180deg);
+        }
+
+        .tile-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .tile-blank {
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+
+        .legend {
+            margin-top: 20px;
+            background: rgba(255,255,255,0.1);
+            padding: 15px 20px;
+            border-radius: 10px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border: 3px solid;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+    <h1>Gridmaster Leaks and Speculation</h1>
+    
+    <div class="controls">
+        <button class="flip-btn" onclick="flipBoard()">Flip Tiles</button>
+    </div>
+
+    <div class="board-container">
+		<div class="board" id="board"></div>
+    </div>
+
+    <div class="legend" id="legend"></div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Border color configuration
+        const borderConfig = {
+            "riddle": { color: "#43fa5f", label: "Solved" },
+            "hint": { color: "#52eeff", label: "Hint" },
+            "leaked": { color: "#ff8800", label: "Scraped" },
+        };
+
+        // Configuration - Edit this JSON to customize your tiles
+		const tileConfig = [
+			// Row 1
+			{
+			  "front": "2025/newsposts/2025-02-05/RR1.png",
+			  "back": "2025/newsposts/2025-02-05/RR1.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "found": "leaked",
+			  "reward": true
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "WhAt ArE tHoSe?!"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/R1T4-T.png",
+			  "back": "2025/newsposts/2025-09-23/R1T4-R.png",
+			  "frontTooltip": "Kill an Ogress.",
+			  "backTooltip": "Combatant"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/R1T5-T.png",
+			  "back": "2025/newsposts/2025-09-23/R1T5-R.png",
+			  "frontTooltip": "Defeat Jal-Zek within the Inferno.",
+			  "backTooltip": "Slayer Master"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			// Row 2
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "reward": true
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2025/newsposts/2025-00-00/R2T4-T.png",
+			  "back": "2025/newsposts/2025-00-00/R2T4-R.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "found": "leaked"
+			},
+			{
+			  "front": "2025/newsposts/2025-01-08/R2T5-T.png",
+			  "back": "2025/newsposts/2025-01-08/R2T5-R.png",
+			  "frontTooltip": "Cook a shark while wearing a Chef's hat.",
+			  "backTooltip": "Corrupted Shark"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2025/newsposts/2025-10-07/R2T7-T.png",
+			  "back": "2025/newsposts/2025-10-07/R2T7-R.png",
+			  "frontTooltip": "Complete the Inferno in 30 minutes or less.",
+			  "backTooltip": "Guardian"
+			},
+			// Row 3
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "reward": true
+			},
+			{
+			  "front": "2025/newsposts/20205-06-06/R3T1-T.png",
+			  "back": "2025/newsposts/20205-06-06/R3T1-R.png",
+			  "frontTooltip": "Obtain some Valuables from a house in Varlamore.",
+			  "backTooltip": "Golden God"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2024/newsposts/2024-03-20/steamforgebrew.png",
+			  "back": "2024/newsposts/2024-03-20/steamforgebrew-R.png",
+			  "frontTooltip": "Boiling iron breath, Forge-fire warms the drinker's soul, Courage in each gulp.",
+			  "backTooltip": "-R",
+			  "found": "riddle"
+			},
+			{
+			  "front": "2025/newsposts/2025-01-09/R3T4-T.png",
+			  "back": "2025/newsposts/2025-01-09/R3T4-R.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "found": "leaked"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2001/newsposts/2001-06-11/potato.png",
+			  "back": "2001/newsposts/2001-06-11/potato-R.png",
+			  "frontTooltip": "Buried in brown earth, Simple strength for weary hands, A meal, hard-earned, warm.",
+			  "backTooltip": "-R",
+			  "found": "riddle"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			// Row 4
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "reward": true
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/R4T1-T.png",
+			  "back": "2025/newsposts/2025-09-23/R4T1-R.png",
+			  "frontTooltip": "Gain over 30,000 coins from one Alchemy spell.",
+			  "backTooltip": "Production Prodigy"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/R4T4-T.png",
+			  "back": "2025/newsposts/2025-09-23/R4T4-R.png",
+			  "frontTooltip": "Complete the Grid Master Tutorial.",
+			  "backTooltip": "Power Miner, Lumberjack, or Animal Wrangler"
+			},
+			{
+			  "front": "2006/newsposts/2006-07-04/fancyboots.png",
+			  "back": "2006/newsposts/2006-07-04/fancyboots-R.png",
+			  "frontTooltip": "Gleam on tattered roads, Colours proud on novice feet, Style before the stats.",
+			  "backTooltip": "-R",
+			  "found": "riddle"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2002/newsposts/2002-07-23/magicgoldfeather.png",
+			  "back": "2002/newsposts/2002-07-23/magicgoldfeather-R.png",
+			  "frontTooltip": "Golden feather falls, Guiding knights through mist and myth, Faith finds what is lost.",
+			  "backTooltip": "-R",
+			  "found": "riddle"
+			},
+			// Row 5
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "reward": true
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2024/newsposts/2024-03-20/moonlightmoth.png",
+			  "back": "2024/newsposts/2024-03-20/moonlightmoth-R.png",
+			  "frontTooltip": "Moonlight softly hums, Silver wings kiss midnight air, Dreams take flight unseen.",
+			  "backTooltip": "-R",
+			  "found": "riddle"
+			},
+			{
+			  "front": "2025/newsposts/2025-10-07/R5T3-T.png",
+			  "back": "2025/newsposts/2025-10-07/R5T3-R.png",
+			  "frontTooltip": "Subdue Tempoross.",
+			  "backTooltip": "Craftsman"
+			},
+			{
+			  "front": "2025/newsposts/2025-01-13/R5T4-T.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "found": "leaked"
+			},
+			{
+			  "front": "2025/newsposts/2025-02-12/R5T5-T.png",
+			  "back": "2025/newsposts/2025-02-12/R5T5-R.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "found": "leaked"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			// Row 6
+			{
+			  "front": "2025/newsposts/2025-05-30/RR6.png",
+			  "back": "2025/newsposts/2025-05-30/RR6.png",
+			  "frontTooltip": "Damned If You Do...",
+			  "backTooltip": "Damned If You Don't...",
+			  "found": "leaked",
+			  "reward": true
+			},
+			{
+			  "front": "2025/newsposts/2025-01-15/R6T1-T.png",
+			  "back": "2025/newsposts/2025-01-15/R6T1-R.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "found": "leaked"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2025/newsposts/2025-01-22/R6T4-T.png",
+			  "back": "2025/newsposts/2025-01-22/R6T4-R.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "found": "leaked"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "Blood, Sweat and Tears",
+			  "backTooltip": "-R",
+			  "found": "hint"
+			},
+			// Row 7
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "reward": true
+			},
+			{
+			  "front": "2025/newsposts/20205-06-06/R7T1-T.png",
+			  "back": "2025/newsposts/20205-06-06/R7T1-R.png",
+			  "frontTooltip": "Obtain a rare unique from Tombs of Amascut.",
+			  "backTooltip": "Mega Rare Scroll"
+			},
+			{
+			  "front": "2025/newsposts/2025-01-28/R7T2-T.png",
+			  "back": "2025/newsposts/2025-01-28/R7T2-R.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "found": "leaked"
+			},
+			{
+			  "front": "2025/newsposts/2025-01-29/R7T3-T.png",
+			  "back": "2025/newsposts/2025-01-29/R7T3-R.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "found": "leaked"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/R7T4-T.png",
+			  "back": "2025/newsposts/2025-09-23/R7T4-R.png",
+			  "frontTooltip": "Defeat the Lesser Demon in the Wizards Tower",
+			  "backTooltip": "Minimum Potential"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-"
+			},
+			{
+			  "front": "2025/newsposts/2025-07-23/humphreydumphrey.png",
+			  "back": "2025/newsposts/2025-07-23/humphreydumphrey-R.png",
+			  "frontTooltip": "Cracked upon the wall, Shell of pride and yolk of fear, Fall, respawn, repeat.",
+			  "backTooltip": "Ricktor, Aiva, Ohn, Serafina, Atlax",
+			  "found": "riddle"
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "frontTooltip": "I'm a secret. Flip me over to find out more.",
+			  "backTooltip": "Well done"
+			},
+			// Row 8
+			{
+			  "front": null,
+			  "back": null,
+			  "frontTooltip": "",
+			  "backTooltip": ""
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "frontTooltip": "Woof",
+			  "backTooltip": "-",
+			  "found": "hint",
+			  "reward": true
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "frontTooltip": "Pull The Lever Krunk!",
+			  "backTooltip": "-",
+			  "found": "hint",
+			  "reward": true
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "reward": true
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "reward": true
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "reward": true
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "frontTooltip": "-",
+			  "backTooltip": "-",
+			  "reward": true
+			},
+			{
+			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "frontTooltip": "Travel Back In Time",
+			  "backTooltip": "Through The Files And Flames",
+			  "found": "hint",
+			  "reward": true
+			}
+		];
+
+        const board = document.getElementById('board');
+        const legend = document.getElementById('legend');
+        const tooltip = document.getElementById('tooltip');
+
+        // Initialize the legend
+        function initLegend() {
+            Object.entries(borderConfig).forEach(([key, config]) => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                
+                const box = document.createElement('div');
+                box.className = 'legend-box';
+                box.style.borderColor = config.color;
+                
+                const label = document.createElement('span');
+                label.textContent = config.label;
+                
+                item.appendChild(box);
+                item.appendChild(label);
+                legend.appendChild(item);
+            });
+        }
+
+        // Initialize the board
+        function initBoard() {
+            tileConfig.forEach((config, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                
+                const front = document.createElement('div');
+                front.className = 'tile-face tile-front';
+                if (config.front) {
+                    front.innerHTML = `<img class="tile-image" src="https://cdn.runescape.com/assets/img/external/oldschool/${config.front}" alt="Front">`;
+                } else {
+                    front.classList.add('tile-blank');
+                }
+                front.dataset.tooltip = config.frontTooltip;
+                
+                // Apply border if 'found' property exists
+                if (config.found && borderConfig[config.found]) {
+                    front.classList.add('bordered');
+                    front.style.borderColor = borderConfig[config.found].color;
+                }
+                
+                const back = document.createElement('div');
+                back.className = 'tile-face tile-back';
+                if (config.back) {
+                    back.innerHTML = `<img class="tile-image" src="https://cdn.runescape.com/assets/img/external/oldschool/${config.back}" alt="Back">`;
+                } else {
+                    back.classList.add('tile-blank');
+                }
+                back.dataset.tooltip = config.backTooltip;
+                
+                // Apply border if 'found' property exists
+                if (config.found && borderConfig[config.found]) {
+                    back.classList.add('bordered');
+                    back.style.borderColor = borderConfig[config.found].color;
+                }
+                
+                tile.appendChild(front);
+                tile.appendChild(back);
+                
+                tile.addEventListener('mouseenter', showTooltip);
+                tile.addEventListener('mousemove', moveTooltip);
+                tile.addEventListener('mouseleave', hideTooltip);
+                
+                board.appendChild(tile);
+            });
+        }
+
+        function flipBoard() {
+            const tiles = document.querySelectorAll('.tile');
+            tiles.forEach(tile => {
+                tile.classList.toggle('flipped');
+            });
+        }
+
+        function showTooltip(e) {
+            const tile = e.currentTarget;
+            const isFlipped = tile.classList.contains('flipped');
+            const face = isFlipped ? tile.querySelector('.tile-back') : tile.querySelector('.tile-front');
+            const tooltipText = face.dataset.tooltip;
+            if (tooltipText) {
+                tooltip.textContent = tooltipText;
+                tooltip.style.display = 'block';
+                moveTooltip(e);
+            }
+        }
+
+        function moveTooltip(e) {
+            tooltip.style.left = (e.pageX + 10) + 'px';
+            tooltip.style.top = (e.pageY + 10) + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+
+        initLegend();
+        initBoard();
+    </script>
+</body>
+</html>
