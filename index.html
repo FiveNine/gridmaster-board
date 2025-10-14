@@ -212,7 +212,7 @@
             border: 2px solid rgba(255,255,255,0.2);
             border-radius: 15px;
             width: 80%;
-            max-width: 500px;
+            max-width: 600px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             animation: slideDown 0.3s;
             color: white;
@@ -304,6 +304,7 @@
 
         .modal-info {
             flex: 1;
+			text-align: center;
         }
 
         .modal-info-label {
@@ -351,10 +352,10 @@
                     <button id="flip-modal-btn" class="flip-modal-btn" onclick="flipModalTile()">Show Back</button>
                 </div>
                 <div class="modal-info">
-                    <div class="modal-info-label">Information:</div>
-                    <div class="modal-info-text" id="modal-info"></div>
-                    <div class="modal-info-label" id="modal-position-label" style="display: none;">Position:</div>
+                    <div class="modal-info-label" id="modal-position-label" style="display: none;">Position</div>
                     <div class="modal-info-text" id="modal-position"></div>
+                    <div class="modal-info-label">Information</div>
+                    <div class="modal-info-text" id="modal-info"></div>
                 </div>
             </div>
         </div>
@@ -399,6 +400,7 @@
 			  "front": "2025/newsposts/2025-09-23/R1T4-T.png",
 			  "back": "2025/newsposts/2025-09-23/R1T4-R.png",
 			  "frontTooltip": "Kill an Ogress.",
+			  "backInfo": "<b>Combatant</b><br /><br />You gain the Combtant benefit. You select three Combat skills, then whenever you gain XP in one of your 3 selected Combat skills, you'll gain 50% of that XP in the other 2 selected skills.<br /><br />Available skills are: Attack, Strength, Defence, Hitpoints, Ranged, Magic and Prayer.",
 			  "backTooltip": "Combatant"
 			},
 			{
@@ -818,7 +820,7 @@
         };
 
         // Modal functions
-        function openModal(frontImage, backImage, frontInfo, backInfo, position = null, status = null) {
+        function openModal(frontImage, backImage, frontInfo, backInfo, position = null, status = null, startFlipped = false) {
             const modalImage = document.getElementById('modal-image');
             const modalInfo = document.getElementById('modal-info');
             const modalPosition = document.getElementById('modal-position');
@@ -833,7 +835,7 @@
                 backInfo: backInfo,
                 position: position,
                 status: status,
-                isFlipped: false,
+                isFlipped: startFlipped,
                 hasBack: backImage && backImage !== frontImage
             };
             
@@ -844,9 +846,16 @@
                 flipBtn.style.display = 'none';
             }
             
-            modalImage.src = frontImage;
-            // Use innerHTML to support HTML formatting
-            modalInfo.innerHTML = frontInfo || 'No information available';
+            // Set initial state based on startFlipped
+            if (startFlipped) {
+                modalImage.src = backImage;
+                modalInfo.innerHTML = backInfo || 'No information available';
+                flipBtn.textContent = 'Show Front';
+            } else {
+                modalImage.src = frontImage;
+                modalInfo.innerHTML = frontInfo || 'No information available';
+                flipBtn.textContent = 'Show Back';
+            }
             
             if (position) {
                 modalPositionLabel.style.display = 'block';
@@ -976,9 +985,20 @@
                     const backInfo = config.backInfo || config.backTooltip;
                     const row = Math.floor(index / 8) + 1;
                     const col = (index % 8) + 1;
-                    const position = `Row ${row}, Column ${col}`;
                     
-                    openModal(frontImgSrc, backImgSrc, frontInfo, backInfo, position, config.found);
+                    let position;
+                    if (col === 1) {
+                        // First column is reward tiles
+                        position = `Row ${row}, Reward Tile`;
+                    } else if (row === 8) {
+                        // Last row is reward tiles
+                        position = `Column ${col - 1}, Reward Tile`;
+                    } else {
+                        // Regular tiles (adjust column to account for reward column)
+                        position = `Row ${row}, Column ${col - 1}`;
+                    }
+                    
+                    openModal(frontImgSrc, backImgSrc, frontInfo, backInfo, position, config.found, isFlipped);
                 });
                 
                 board.appendChild(tile);
