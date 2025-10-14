@@ -134,9 +134,10 @@
             border-radius: 6px;
             border-left: 4px solid;
             background: #f8f9fa;
-			display: flex;
-			justify-content: space-between;
-			flex-wrap: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: nowrap;
         }
 
         .result-item.exists {
@@ -147,6 +148,40 @@
         .result-item.not-exists {
             border-left-color: #dc3545;
             background: #f8d7da;
+        }
+
+        .result-thumbnail {
+            flex-shrink: 0;
+            width: 96px;
+            height: 96px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 2px solid #dee2e6;
+        }
+
+        .result-thumbnail img {
+            max-width: 96px;
+            max-height: 96px;
+            object-fit: contain;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .result-thumbnail img:hover {
+            transform: scale(1.05);
+        }
+
+        .result-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
         }
 
         .result-url {
@@ -160,6 +195,8 @@
             text-align: left;
             cursor: pointer;
             transition: background-color 0.2s;
+            flex: 1;
+            min-width: 0;
         }
 
         .result-url:hover {
@@ -171,10 +208,10 @@
         }
 
         .result-status {
-			margin-left: 10px;
+            margin-left: 10px;
             font-size: 12px;
             font-weight: 600;
-			text-wrap: nowrap;
+            text-wrap: nowrap;
         }
 
         .result-item.exists .result-status {
@@ -203,7 +240,7 @@
             color: #856404;
             font-weight: 600;
         }
-		
+        
         .button-row {
             display: flex;
             gap: 10px;
@@ -238,19 +275,17 @@
     </style>
 </head>
 <body>
-	<div class="button-row">
-		<a href="./index.html" class="nav-button">Gridmaster Leaks and Speculation</a>
-		<a href="./wiki-cdn-eval.user.js.txt" class="nav-button" alt="Evaluates wiki pages for matching CDN image tiles">Wiki CDN Tampermonkey Script</a>
-	</div>
+    <div class="button-row">
+        <a href="./index.html" class="nav-button">Gridmaster Leaks and Speculation</a>
+        <a href="./wiki-cdn-eval.user.js.txt" class="nav-button" alt="Evaluates wiki pages for matching CDN image tiles">Wiki CDN Tampermonkey Script</a>
+    </div>
     <div class="container">
         <h1>🔍 File Existence Checker</h1>
         <p class="subtitle">Check if a file exists across multiple URL directories</p>
 
         <div class="form">
             <label for="directories">URL Directories (one per line):</label>
-            <textarea id="directories" placeholder="https://cdn.runescape.com/assets/img/external/oldschool/2019/newsposts/2019-05-02/&#10;
-https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-11-07/&#10;
-https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-11-15/">
+            <textarea id="directories" placeholder="https://cdn.runescape.com/assets/img/external/oldschool/2019/newsposts/2019-05-02/&#10;https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-11-07/&#10;https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-11-15/">
 https://cdn.runescape.com/assets/img/external/oldschool/2001/newsposts/2001-06-11
 https://cdn.runescape.com/assets/img/external/oldschool/2002/newsposts/2002-02-27
 https://cdn.runescape.com/assets/img/external/oldschool/2002/newsposts/2002-07-23
@@ -1110,7 +1145,6 @@ https://cdn.runescape.com/assets/img/external/oldschool/tsk
 
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
-                // Show a brief visual feedback
                 const tooltip = document.createElement('div');
                 tooltip.textContent = 'Copied!';
                 tooltip.style.cssText = `
@@ -1136,7 +1170,6 @@ https://cdn.runescape.com/assets/img/external/oldschool/tsk
             });
         }
 
-        // Add CSS animation for the tooltip
         const style = document.createElement('style');
         style.textContent = `
             @keyframes fadeOut {
@@ -1154,8 +1187,10 @@ https://cdn.runescape.com/assets/img/external/oldschool/tsk
         function createResultPlaceholder(url, index) {
             return `
                 <div class="result-item" id="result-${index}" style="border-left-color: #999; background: #f0f0f0;">
-                    <div class="result-url" title="${url}" onclick="copyToClipboard('${url.replace(/'/g, "\\'")}')">${url}</div>
-                    <div class="result-status">⏳ Checking...</div>
+                    <div class="result-info">
+                        <div class="result-url" title="${url}" onclick="copyToClipboard('${url.replace(/'/g, "\\'")}')">${url}</div>
+                        <div class="result-status">⏳ Checking...</div>
+                    </div>
                 </div>
             `;
         }
@@ -1164,7 +1199,6 @@ https://cdn.runescape.com/assets/img/external/oldschool/tsk
             const escapedUrl = url.replace(/'/g, "\\'");
             
             if (exists) {
-                // Add to found section
                 const foundSection = document.getElementById('found-items');
                 const statusClass = 'exists';
                 const icon = '✓';
@@ -1172,8 +1206,13 @@ https://cdn.runescape.com/assets/img/external/oldschool/tsk
                 
                 const resultHtml = `
                     <div class="result-item ${statusClass}">
-                        <div class="result-url" title="${url}" onclick="copyToClipboard('${escapedUrl}')">${url}</div>
-                        <div class="result-status">${icon} ${statusText}</div>
+                        <a href="${url}" target="_blank" class="result-thumbnail">
+                            <img src="${url}" alt="Found image">
+                        </a>
+                        <div class="result-info">
+                            <div class="result-url" title="${url}" onclick="copyToClipboard('${escapedUrl}')">${url}</div>
+                            <div class="result-status">${icon} ${statusText}</div>
+                        </div>
                     </div>
                 `;
                 foundSection.innerHTML += resultHtml;
@@ -1181,7 +1220,6 @@ https://cdn.runescape.com/assets/img/external/oldschool/tsk
                 foundCount++;
             }
 
-            // Update the checking item
             const resultItem = document.getElementById(`result-${index}`);
             const statusClass = exists ? 'exists' : 'not-exists';
             const icon = exists ? '✓' : '✗';
@@ -1189,8 +1227,10 @@ https://cdn.runescape.com/assets/img/external/oldschool/tsk
             
             resultItem.className = `result-item ${statusClass}`;
             resultItem.innerHTML = `
-                <div class="result-url" title="${url}" onclick="copyToClipboard('${escapedUrl}')">${url}</div>
-                <div class="result-status">${icon} ${statusText}</div>
+                <div class="result-info">
+                    <div class="result-url" title="${url}" onclick="copyToClipboard('${escapedUrl}')">${url}</div>
+                    <div class="result-status">${icon} ${statusText}</div>
+                </div>
             `;
 
             completedCount++;
@@ -1227,7 +1267,6 @@ https://cdn.runescape.com/assets/img/external/oldschool/tsk
             totalCount = directories.length;
             foundCount = 0;
 
-            // Create the structure
             let html = `
                 <div class="progress-bar" id="progress">0/${totalCount} evaluated. 0 found.</div>
                 <div class="found-section empty" id="found-section">
@@ -1246,7 +1285,6 @@ https://cdn.runescape.com/assets/img/external/oldschool/tsk
             html += '</div>';
             resultsDiv.innerHTML = html;
 
-            // Check all URLs in parallel
             const promises = directories.map(async (directory, index) => {
                 const baseUrl = directory.endsWith('/') ? directory : directory + '/';
                 const fullUrl = baseUrl + filename;
