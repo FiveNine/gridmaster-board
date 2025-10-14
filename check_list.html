@@ -134,6 +134,9 @@
             border-radius: 6px;
             border-left: 4px solid;
             background: #f8f9fa;
+			display: flex;
+			justify-content: space-between;
+			flex-wrap: nowrap;
         }
 
         .result-item.exists {
@@ -150,7 +153,6 @@
             font-family: 'Courier New', monospace;
             font-size: 13px;
             color: #333;
-            margin-bottom: 5px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -169,8 +171,10 @@
         }
 
         .result-status {
+			margin-left: 10px;
             font-size: 12px;
             font-weight: 600;
+			text-wrap: nowrap;
         }
 
         .result-item.exists .result-status {
