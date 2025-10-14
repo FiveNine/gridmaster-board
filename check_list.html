@@ -99,6 +99,35 @@
             margin-top: 30px;
         }
 
+        .found-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #d4edda;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+        }
+
+        .found-section h3 {
+            color: #155724;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .found-section.empty {
+            display: none;
+        }
+
+        .progress-bar {
+            margin-bottom: 20px;
+            padding: 12px 15px;
+            background: #e7f3ff;
+            border-radius: 6px;
+            border-left: 4px solid #2196F3;
+            text-align: center;
+            font-weight: 600;
+            color: #0d47a1;
+        }
+
         .result-item {
             padding: 15px;
             margin-bottom: 10px;
@@ -120,9 +149,13 @@
         .result-url {
             font-family: 'Courier New', monospace;
             font-size: 13px;
-            word-break: break-all;
             color: #333;
             margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            direction: rtl;
+            text-align: left;
         }
 
         .result-status {
@@ -147,13 +180,13 @@
         .summary {
             margin-top: 20px;
             padding: 15px;
-            background: #e7f3ff;
+            background: #fff3cd;
             border-radius: 6px;
-            border-left: 4px solid #2196F3;
+            border-left: 4px solid #ffc107;
         }
 
         .summary-text {
-            color: #0d47a1;
+            color: #856404;
             font-weight: 600;
         }
     </style>
@@ -186,21 +219,59 @@
             });
         }
 
-        async function checkFileInDirectories(directories, filename) {
-            const results = [];
-            
-            for (const directory of directories) {
-                const baseUrl = directory.endsWith('/') ? directory : directory + '/';
-                const fullUrl = baseUrl + filename;
+        let completedCount = 0;
+        let totalCount = 0;
+        let foundCount = 0;
+
+        function createResultPlaceholder(url, index) {
+            return `
+                <div class="result-item" id="result-${index}" style="border-left-color: #999; background: #f0f0f0;">
+                    <div class="result-url" title="${url}">${url}</div>
+                    <div class="result-status">⏳ Checking...</div>
+                </div>
+            `;
+        }
+
+        function updateResult(index, url, exists) {
+            if (exists) {
+                // Add to found section
+                const foundSection = document.getElementById('found-items');
+                const statusClass = 'exists';
+                const icon = '✓';
+                const statusText = 'EXISTS';
                 
-                const exists = await checkImage(fullUrl);
-                results.push({
-                    url: fullUrl,
-                    exists: exists
-                });
+                const resultHtml = `
+                    <div class="result-item ${statusClass}">
+                        <div class="result-url" title="${url}">${url}</div>
+                        <div class="result-status">${icon} ${statusText}</div>
+                    </div>
+                `;
+                foundSection.innerHTML += resultHtml;
+                document.getElementById('found-section').classList.remove('empty');
+                foundCount++;
             }
+
+            // Update the checking item
+            const resultItem = document.getElementById(`result-${index}`);
+            const statusClass = exists ? 'exists' : 'not-exists';
+            const icon = exists ? '✓' : '✗';
+            const statusText = exists ? 'EXISTS' : 'NOT FOUND';
             
-            return results;
+            resultItem.className = `result-item ${statusClass}`;
+            resultItem.innerHTML = `
+                <div class="result-url" title="${url}">${url}</div>
+                <div class="result-status">${icon} ${statusText}</div>
+            `;
+
+            completedCount++;
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const progressDiv = document.getElementById('progress');
+            if (progressDiv) {
+                progressDiv.textContent = `${completedCount}/${totalCount} evaluated. ${foundCount} found.`;
+            }
         }
 
         async function checkFiles() {
@@ -222,53 +293,40 @@
             }
 
             checkBtn.disabled = true;
-            resultsDiv.innerHTML = '<div class="loading">⏳ Checking files...</div>';
+            completedCount = 0;
+            totalCount = directories.length;
+            foundCount = 0;
 
-            try {
-                const results = await checkFileInDirectories(directories, filename);
-                displayResults(results);
-            } catch (error) {
-                resultsDiv.innerHTML = `<div class="result-item not-exists">
-                    <div class="result-status">❌ Error: ${error.message}</div>
-                </div>`;
-            } finally {
-                checkBtn.disabled = false;
-            }
-        }
-
-        function displayResults(results) {
-            const resultsDiv = document.getElementById('results');
-            const existsCount = results.filter(r => r.exists).length;
-            const totalCount = results.length;
-
-            let html = '';
+            // Create the structure
+            let html = `
+                <div class="progress-bar" id="progress">0/${totalCount} evaluated. 0 found.</div>
+                <div class="found-section empty" id="found-section">
+                    <h3>✓ Files Found</h3>
+                    <div id="found-items"></div>
+                </div>
+                <div id="all-results">
+            `;
             
-            results.forEach(result => {
-                const statusClass = result.exists ? 'exists' : 'not-exists';
-                const icon = result.exists ? '✓' : '✗';
-                const statusText = result.exists 
-                    ? `EXISTS (Status: ${result.status})` 
-                    : result.error 
-                        ? `NOT FOUND (Error: ${result.error})` 
-                        : `NOT FOUND (Status: ${result.status})`;
+            directories.forEach((directory, index) => {
+                const baseUrl = directory.endsWith('/') ? directory : directory + '/';
+                const fullUrl = baseUrl + filename;
+                html += createResultPlaceholder(fullUrl, index);
+            });
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+
+            // Check all URLs in parallel
+            const promises = directories.map(async (directory, index) => {
+                const baseUrl = directory.endsWith('/') ? directory : directory + '/';
+                const fullUrl = baseUrl + filename;
                 
-                html += `
-                    <div class="result-item ${statusClass}">
-                        <div class="result-url">${result.url}</div>
-                        <div class="result-status">${icon} ${statusText}</div>
-                    </div>
-                `;
+                const exists = await checkImage(fullUrl);
+                updateResult(index, fullUrl, exists);
             });
 
-            html += `
-                <div class="summary">
-                    <div class="summary-text">
-                        📊 Summary: ${existsCount} of ${totalCount} files found
-                    </div>
-                </div>
-            `;
-
-            resultsDiv.innerHTML = html;
+            await Promise.all(promises);
+            checkBtn.disabled = false;
         }
     </script>
 </body>
