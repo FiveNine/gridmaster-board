@@ -156,6 +156,16 @@
             text-overflow: ellipsis;
             direction: rtl;
             text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .result-url:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .result-url:active {
+            background-color: rgba(0, 0, 0, 0.1);
         }
 
         .result-status {
@@ -198,10 +208,12 @@
 
         <div class="form">
             <label for="directories">URL Directories (one per line):</label>
-            <textarea id="directories" placeholder="https://example.com/images&#10;https://example.com/assets&#10;https://cdn.example.com/files"></textarea>
+            <textarea id="directories" placeholder="https://cdn.runescape.com/assets/img/external/oldschool/2019/newsposts/2019-05-02/&#10;
+https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-11-07/&#10;
+https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-11-15/"></textarea>
 
             <label for="filename">Filename to check:</label>
-            <input type="text" id="filename" placeholder="logo.png" value="logo.png">
+            <input type="text" id="filename" placeholder="karil.png" value="">
 
             <button id="checkBtn" onclick="checkFiles()">Check Files</button>
         </div>
@@ -219,6 +231,45 @@
             });
         }
 
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Show a brief visual feedback
+                const tooltip = document.createElement('div');
+                tooltip.textContent = 'Copied!';
+                tooltip.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: #333;
+                    color: white;
+                    padding: 10px 20px;
+                    border-radius: 6px;
+                    font-weight: 600;
+                    z-index: 1000;
+                    animation: fadeOut 1s forwards;
+                `;
+                document.body.appendChild(tooltip);
+                
+                setTimeout(() => {
+                    document.body.removeChild(tooltip);
+                }, 1000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        // Add CSS animation for the tooltip
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                0% { opacity: 1; }
+                70% { opacity: 1; }
+                100% { opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
         let completedCount = 0;
         let totalCount = 0;
         let foundCount = 0;
@@ -226,13 +277,15 @@
         function createResultPlaceholder(url, index) {
             return `
                 <div class="result-item" id="result-${index}" style="border-left-color: #999; background: #f0f0f0;">
-                    <div class="result-url" title="${url}">${url}</div>
+                    <div class="result-url" title="${url}" onclick="copyToClipboard('${url.replace(/'/g, "\\'")}')">${url}</div>
                     <div class="result-status">⏳ Checking...</div>
                 </div>
             `;
         }
 
         function updateResult(index, url, exists) {
+            const escapedUrl = url.replace(/'/g, "\\'");
+            
             if (exists) {
                 // Add to found section
                 const foundSection = document.getElementById('found-items');
@@ -242,7 +295,7 @@
                 
                 const resultHtml = `
                     <div class="result-item ${statusClass}">
-                        <div class="result-url" title="${url}">${url}</div>
+                        <div class="result-url" title="${url}" onclick="copyToClipboard('${escapedUrl}')">${url}</div>
                         <div class="result-status">${icon} ${statusText}</div>
                     </div>
                 `;
@@ -259,7 +312,7 @@
             
             resultItem.className = `result-item ${statusClass}`;
             resultItem.innerHTML = `
-                <div class="result-url" title="${url}">${url}</div>
+                <div class="result-url" title="${url}" onclick="copyToClipboard('${escapedUrl}')">${url}</div>
                 <div class="result-status">${icon} ${statusText}</div>
             `;
 
