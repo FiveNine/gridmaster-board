@@ -187,6 +187,136 @@
             position: relative;
             cursor: pointer;
         }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #2e4963 0%, #1a1525 100%);
+            margin: 10% auto;
+            padding: 30px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            animation: slideDown 0.3s;
+            color: white;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+            transition: color 0.3s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: white;
+        }
+
+        .modal-body {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .modal-image-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .modal-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 8px;
+            border: 3px solid rgba(255,255,255,0.3);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .flip-modal-btn {
+            background: white;
+            border: none;
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #667eea;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .flip-modal-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .flip-modal-btn:active {
+            transform: translateY(0);
+        }
+
+        .modal-info {
+            flex: 1;
+        }
+
+        .modal-info-label {
+            font-weight: bold;
+            color: #52eeff;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .modal-info-text {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -208,6 +338,27 @@
     </div>
 
     <div class="tooltip" id="tooltip"></div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="modal-title">Tile Information</span>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-image-container">
+                    <img id="modal-image" class="modal-image" src="" alt="Tile">
+                    <button id="flip-modal-btn" class="flip-modal-btn" onclick="flipModalTile()">Show Back</button>
+                </div>
+                <div class="modal-info">
+                    <div class="modal-info-label">Information:</div>
+                    <div class="modal-info-text" id="modal-info"></div>
+                    <div class="modal-info-label" id="modal-position-label" style="display: none;">Position:</div>
+                    <div class="modal-info-text" id="modal-position"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Border color configuration
@@ -268,6 +419,7 @@
 			  "back": "2002/newsposts/2002-10-23/pigeoncage-R.png",
 			  "frontTooltip": "Feather meets the claw, Balance kept in humble wire, Secrets sleep in steel.",
 			  "backTooltip": "-R",
+			  "frontInfo": "Feather meets the claw,<br /><br />Balance kept in humble wire,<br /><br />Secrets sleep in steel.",
 			  "found": "riddle"
 			},
 			// Row 2
@@ -281,6 +433,7 @@
 			  "front": "2001/newsposts/2001-06-11/cheese.png",
 			  "back": "2001/newsposts/2001-06-11/cheese-R.png",
 			  "frontTooltip": "Golden moon of milk, Stored in banks since ages past, Mice fear only lag.",
+			  "frontInfo": "Golden moon of milk,<br /><br />Stored in banks since ages past,<br /><br />Mice fear only lag.",
 			  "backTooltip": "-R",
 			  "found": "riddle"
 			},
@@ -343,6 +496,7 @@
 			  "front": "2024/newsposts/2024-03-20/steamforgebrew.png",
 			  "back": "2024/newsposts/2024-03-20/steamforgebrew-R.png",
 			  "frontTooltip": "Boiling iron breath, Forge-fire warms the drinker's soul, Courage in each gulp.",
+			  "frontInfo": "Boiling iron breath,<br /><br />Forge-fire warms the drinker's soul,<br /><br />Courage in each gulp.",
 			  "backTooltip": "-R",
 			  "found": "riddle"
 			},
@@ -362,6 +516,7 @@
 			  "front": "2001/newsposts/2001-06-11/potato.png",
 			  "back": "2001/newsposts/2001-06-11/potato-R.png",
 			  "frontTooltip": "Buried in brown earth, Simple strength for weary hands, A meal, hard-earned, warm.",
+			  "frontInfo": "Buried in brown earth,<br /><br />Simple strength for weary hands,<br /><br />A meal, hard-earned, warm.",
 			  "backTooltip": "-R",
 			  "found": "riddle"
 			},
@@ -389,6 +544,7 @@
 			  "front": "2002/newsposts/2002-07-23/cupoftea.png",
 			  "back": "2002/newsposts/2002-07-23/cupoftea-R.png",
 			  "frontTooltip": "Not potion, nor spell, Still the hand that sips finds peace, Warmth cloaks mortal will.",
+			  "frontInfo": "Not potion, nor spell,<br /><br />Still the hand that sips finds peace,<br /><br />Warmth cloaks mortal will.",
 			  "backTooltip": "-",
 			  "found": "riddle"
 			},
@@ -409,6 +565,7 @@
 			  "front": "2006/newsposts/2006-07-04/fancyboots.png",
 			  "back": "2006/newsposts/2006-07-04/fancyboots-R.png",
 			  "frontTooltip": "Gleam on tattered roads, Colours proud on novice feet, Style before the stats.",
+			  "frontInfo": "Gleam on tattered roads,<br /><br />Colours proud on novice feet,<br /><br />Style before the stats.",
 			  "backTooltip": "-R",
 			  "found": "riddle"
 			},
@@ -423,6 +580,7 @@
 			  "front": "2002/newsposts/2002-07-23/magicgoldfeather.png",
 			  "back": "2002/newsposts/2002-07-23/magicgoldfeather-R.png",
 			  "frontTooltip": "Golden feather falls, Guiding knights through mist and myth, Faith finds what is lost.",
+			  "frontInfo": "Golden feather falls,<br /><br />Guiding knights through mist and myth,<br /><br />Faith finds what is lost.",
 			  "backTooltip": "-R",
 			  "found": "riddle"
 			},
@@ -444,6 +602,7 @@
 			  "front": "2024/newsposts/2024-03-20/moonlightmoth.png",
 			  "back": "2024/newsposts/2024-03-20/moonlightmoth-R.png",
 			  "frontTooltip": "Moonlight softly hums, Silver wings kiss midnight air, Dreams take flight unseen.",
+			  "frontInfo": "Moonlight softly hums,<br /><br />Silver wings kiss midnight air,<br /><br />Dreams take flight unseen.",
 			  "backTooltip": "-R",
 			  "found": "riddle"
 			},
@@ -500,7 +659,8 @@
 			{
 			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "back": "2013/newsposts/2013-10-17/gwd.png",
-			  "frontTooltip": "K G Z K R R I R E A L I E A Y L A R A N R D N E R O A X A R (Anagram for KREE ARRA, GRAARDOR, ZILYANA, KRIL, NEX)",
+			  "frontTooltip": "K G Z K R R I R E A L I E A Y L A R A N R D N E R O A X A R",
+			  "frontInfo": "K G Z K R R I R E A L I E A Y L A R A N R D N E R O A X A R<br /><br />(Anagram for KREE ARRA, GRAARDOR, ZILYANA, KRIL, NEX)",
 			  "backTooltip": "-",
 			  "found": "riddle"
 			},
@@ -570,6 +730,7 @@
 			  "front": "2025/newsposts/2025-07-23/humphreydumphrey.png",
 			  "back": "2025/newsposts/2025-07-23/humphreydumphrey-R.png",
 			  "frontTooltip": "Cracked upon the wall, Shell of pride and yolk of fear, Fall, respawn, repeat.",
+			  "frontInfo": "Cracked upon the wall,<br /><br />Shell of pride and yolk of fear,<br /><br />Fall, respawn, repeat.",
 			  "backTooltip": "-R",
 			  "found": "riddle"
 			},
@@ -642,6 +803,106 @@
         const board = document.getElementById('board');
         const legend = document.getElementById('legend');
         const tooltip = document.getElementById('tooltip');
+        const modal = document.getElementById('modal');
+        
+        // Store current modal state
+        let currentModalData = {
+            frontImage: '',
+            backImage: '',
+            frontInfo: '',
+            backInfo: '',
+            position: null,
+            status: null,
+            isFlipped: false,
+            hasBack: false
+        };
+
+        // Modal functions
+        function openModal(frontImage, backImage, frontInfo, backInfo, position = null, status = null) {
+            const modalImage = document.getElementById('modal-image');
+            const modalInfo = document.getElementById('modal-info');
+            const modalPosition = document.getElementById('modal-position');
+            const modalPositionLabel = document.getElementById('modal-position-label');
+            const flipBtn = document.getElementById('flip-modal-btn');
+            
+            // Store modal data
+            currentModalData = {
+                frontImage: frontImage,
+                backImage: backImage,
+                frontInfo: frontInfo,
+                backInfo: backInfo,
+                position: position,
+                status: status,
+                isFlipped: false,
+                hasBack: backImage && backImage !== frontImage
+            };
+            
+            // Show/hide flip button based on whether there's a different back image
+            if (currentModalData.hasBack) {
+                flipBtn.style.display = 'block';
+            } else {
+                flipBtn.style.display = 'none';
+            }
+            
+            modalImage.src = frontImage;
+            // Use innerHTML to support HTML formatting
+            modalInfo.innerHTML = frontInfo || 'No information available';
+            
+            if (position) {
+                modalPositionLabel.style.display = 'block';
+                modalPosition.style.display = 'block';
+                modalPosition.textContent = position;
+            } else {
+                modalPositionLabel.style.display = 'none';
+                modalPosition.style.display = 'none';
+            }
+            
+            // Add border color to modal image if status exists
+            if (status && borderConfig[status]) {
+                modalImage.style.borderColor = borderConfig[status].color;
+            } else {
+                modalImage.style.borderColor = 'rgba(255,255,255,0.3)';
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function flipModalTile() {
+            const modalImage = document.getElementById('modal-image');
+            const modalInfo = document.getElementById('modal-info');
+            const flipBtn = document.getElementById('flip-modal-btn');
+            
+            currentModalData.isFlipped = !currentModalData.isFlipped;
+            
+            if (currentModalData.isFlipped) {
+                modalImage.src = currentModalData.backImage;
+                modalInfo.innerHTML = currentModalData.backInfo || 'No information available';
+                flipBtn.textContent = 'Show Front';
+            } else {
+                modalImage.src = currentModalData.frontImage;
+                modalInfo.innerHTML = currentModalData.frontInfo || 'No information available';
+                flipBtn.textContent = 'Show Back';
+            }
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+            currentModalData.isFlipped = false;
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
 
         // Initialize the legend
         function initLegend() {
@@ -705,6 +966,21 @@
                 tile.addEventListener('mousemove', moveTooltip);
                 tile.addEventListener('mouseleave', hideTooltip);
                 
+                // Add click handler for modal
+                tile.addEventListener('click', function() {
+                    const isFlipped = tile.classList.contains('flipped');
+                    const currentFace = isFlipped ? back : front;
+                    const frontImgSrc = front.querySelector('.tile-image')?.src || '';
+                    const backImgSrc = back.querySelector('.tile-image')?.src || '';
+                    const frontInfo = config.frontInfo || config.frontTooltip;
+                    const backInfo = config.backInfo || config.backTooltip;
+                    const row = Math.floor(index / 8) + 1;
+                    const col = (index % 8) + 1;
+                    const position = `Row ${row}, Column ${col}`;
+                    
+                    openModal(frontImgSrc, backImgSrc, frontInfo, backInfo, position, config.found);
+                });
+                
                 board.appendChild(tile);
             });
         }
@@ -744,6 +1020,14 @@
                 tile.addEventListener('mouseenter', showUnplacedTooltip);
                 tile.addEventListener('mousemove', moveTooltip);
                 tile.addEventListener('mouseleave', hideTooltip);
+                
+                // Add click handler for modal
+                tile.addEventListener('click', function() {
+                    const imgSrc = tile.querySelector('.tile-image')?.src || '';
+                    const info = config.info || config.tooltip;
+                    
+                    openModal(imgSrc, imgSrc, info, info, null, config.found);
+                });
                 
                 tileWrapper.appendChild(tile);
                 container.appendChild(tileWrapper);
