@@ -28,6 +28,13 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
+        h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
         .controls {
             margin-bottom: 20px;
         }
@@ -154,6 +161,32 @@
             border-radius: 3px;
             background: rgba(255,255,255,0.2);
         }
+
+        #unplaced-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        #unplaced-tiles {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .unplaced-tile-wrapper {
+            width: 76px;
+            height: 76px;
+            position: relative;
+        }
+
+        .unplaced-tile {
+            position: relative;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -164,10 +197,15 @@
     </div>
 
     <div class="board-container">
-		<div class="board" id="board"></div>
+        <div class="board" id="board"></div>
     </div>
 
     <div class="legend" id="legend"></div>
+
+    <div id="unplaced-section">
+        <h2>Unplaced Tiles</h2>
+        <div id="unplaced-tiles"></div>
+    </div>
 
     <div class="tooltip" id="tooltip"></div>
 
@@ -180,7 +218,7 @@
         };
 
         // Configuration - Edit this JSON to customize your tiles
-		const tileConfig = [
+        const tileConfig = [
 			// Row 1
 			{
 			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
@@ -595,6 +633,12 @@
 			}
 		];
 
+        // Unplaced tiles configuration - Add tiles here that don't have known positions
+        const unplacedTiles = [
+            { image: "2002/newsposts/2002-02-27/dramenstaff.png", tooltip: "Found by clicking Dramen Staff" },
+            { image: "2003/newsposts/2003-01-28/cheerleader.png", tooltip: "Unknown location" }
+        ];
+
         const board = document.getElementById('board');
         const legend = document.getElementById('legend');
         const tooltip = document.getElementById('tooltip');
@@ -665,6 +709,47 @@
             });
         }
 
+        // Initialize unplaced tiles section
+        function initUnplacedTiles() {
+            const section = document.getElementById('unplaced-section');
+            const container = document.getElementById('unplaced-tiles');
+            
+            if (unplacedTiles.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            section.style.display = 'block';
+            
+            unplacedTiles.forEach(config => {
+                const tileWrapper = document.createElement('div');
+                tileWrapper.className = 'unplaced-tile-wrapper';
+                
+                const tile = document.createElement('div');
+                tile.className = 'tile-face unplaced-tile';
+                
+                if (config.image) {
+                    tile.innerHTML = `<img class="tile-image" src="https://cdn.runescape.com/assets/img/external/oldschool/${config.image}" alt="Unplaced tile">`;
+                } else {
+                    tile.classList.add('tile-blank');
+                }
+                
+                tile.dataset.tooltip = config.tooltip || '-';
+                
+                if (config.found && borderConfig[config.found]) {
+                    tile.classList.add('bordered');
+                    tile.style.borderColor = borderConfig[config.found].color;
+                }
+                
+                tile.addEventListener('mouseenter', showUnplacedTooltip);
+                tile.addEventListener('mousemove', moveTooltip);
+                tile.addEventListener('mouseleave', hideTooltip);
+                
+                tileWrapper.appendChild(tile);
+                container.appendChild(tileWrapper);
+            });
+        }
+
         function flipBoard() {
             const tiles = document.querySelectorAll('.tile');
             tiles.forEach(tile => {
@@ -677,7 +762,17 @@
             const isFlipped = tile.classList.contains('flipped');
             const face = isFlipped ? tile.querySelector('.tile-back') : tile.querySelector('.tile-front');
             const tooltipText = face.dataset.tooltip;
-            if (tooltipText) {
+            if (tooltipText && tooltipText !== '-') {
+                tooltip.textContent = tooltipText;
+                tooltip.style.display = 'block';
+                moveTooltip(e);
+            }
+        }
+
+        function showUnplacedTooltip(e) {
+            const tile = e.currentTarget;
+            const tooltipText = tile.dataset.tooltip;
+            if (tooltipText && tooltipText !== '-') {
                 tooltip.textContent = tooltipText;
                 tooltip.style.display = 'block';
                 moveTooltip(e);
@@ -695,6 +790,7 @@
 
         initLegend();
         initBoard();
+        initUnplacedTiles();
     </script>
 </body>
 </html>
