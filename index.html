@@ -207,15 +207,19 @@
 
         .modal-content {
             background: linear-gradient(135deg, #2e4963 0%, #1a1525 100%);
-            margin: 10% auto;
+            margin: 3% auto;
             padding: 30px;
             border: 2px solid rgba(255,255,255,0.2);
             border-radius: 15px;
             width: 80%;
-            max-width: 600px;
+            max-width: 1000px;
+            max-height: 85vh;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             animation: slideDown 0.3s;
             color: white;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         @keyframes slideDown {
@@ -236,6 +240,7 @@
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 2px solid rgba(255,255,255,0.2);
+			flex-shrink: 0;
         }
 
         .modal-title {
@@ -262,6 +267,10 @@
             display: flex;
             gap: 20px;
             align-items: flex-start;
+            overflow-y: auto;
+            overflow-x: hidden;
+            flex: 1;
+            padding-right: 10px;
         }
 
         .modal-image-container {
@@ -318,6 +327,44 @@
             margin-bottom: 15px;
             line-height: 1.5;
         }
+
+        .modal-tabs {
+            display: flex;
+			justify-content: center;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .modal-tab {
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-size: cover;
+            background-position: center;
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .modal-tab:hover {
+            border-color: rgba(255,255,255,0.6);
+            transform: scale(1.05);
+        }
+
+        .modal-tab.active {
+            border-color: #52eeff;
+            box-shadow: 0 0 10px rgba(82,238,255,0.5);
+        }
+
+        .modal-tab-content {
+            display: none;
+        }
+
+        .modal-tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -355,6 +402,7 @@
                     <div class="modal-info-label" id="modal-position-label" style="display: none;">Position</div>
                     <div class="modal-info-text" id="modal-position"></div>
                     <div class="modal-info-label">Information</div>
+                    <div id="modal-tabs-container"></div>
                     <div class="modal-info-text" id="modal-info"></div>
                 </div>
             </div>
@@ -373,52 +421,54 @@
         const tileConfig = [
 			// Row 1
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "dare, dare, dare, enter, enter, enter",
 			  "backTooltip": "WhAt ArE tHoSe?!"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/R1T4-T.png",
-			  "back": "2025/newsposts/2025-09-23/R1T4-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/R1T4-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/R1T4-R.png",
 			  "frontTooltip": "Kill an Ogress.",
 			  "backInfo": "<b>Combatant</b><br /><br />You gain the Combtant benefit. You select three Combat skills, then whenever you gain XP in one of your 3 selected Combat skills, you'll gain 50% of that XP in the other 2 selected skills.<br /><br />Available skills are: Attack, Strength, Defence, Hitpoints, Ranged, Magic and Prayer.",
 			  "backTooltip": "Combatant"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/R1T5-T.png",
-			  "back": "2025/newsposts/2025-09-23/R1T5-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/R1T5-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/R1T5-R.png",
 			  "frontTooltip": "Defeat Jal-Zek within the Inferno.",
-			  "backTooltip": "Slayer Master"
+			  "backTooltip": "Slayer Master",
+			  "backInfo": "<b>Slayer Master</b><br /><br />Always be on-task for all slayer monsters and unlock all slayer task perks for free."
 			},
 			{
-			  "front": "rlc/symbol.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/rlc/symbol.png",
+			  "back": "./mountain-R.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-",
+			  "backInfo": "<i>This tile features the symbol for Yama, or 'mountain' in Japanese.<br /><br />When colour adjusted, a discovered mountain.png yields this image.</i>",
 			  "found": "hint"
 			},
 			{
-			  "front": "2002/newsposts/2002-10-23/pigeoncage.png",
-			  "back": "2002/newsposts/2002-10-23/pigeoncage-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2002/newsposts/2002-10-23/pigeoncage.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2002/newsposts/2002-10-23/pigeoncage-R.png",
 			  "frontTooltip": "Feather meets the claw, Balance kept in humble wire, Secrets sleep in steel.",
 			  "backTooltip": "-R",
 			  "frontInfo": "Feather meets the claw,<br /><br />Balance kept in humble wire,<br /><br />Secrets sleep in steel.",
@@ -426,161 +476,194 @@
 			},
 			// Row 2
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2001/newsposts/2001-06-11/cheese.png",
-			  "back": "2001/newsposts/2001-06-11/cheese-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2001/newsposts/2001-06-11/cheese.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2001/newsposts/2001-06-11/cheese-R.png",
 			  "frontTooltip": "Golden moon of milk, Stored in banks since ages past, Mice fear only lag.",
 			  "frontInfo": "Golden moon of milk,<br /><br />Stored in banks since ages past,<br /><br />Mice fear only lag.",
 			  "backTooltip": "-R",
 			  "found": "riddle"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2025/newsposts/2025-00-00/R2T4-T.png",
-			  "back": "2025/newsposts/2025-00-00/R2T4-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-00-00/R2T4-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-00-00/R2T4-R.png",
 			  "frontTooltip": "Reach 500 total level.",
 			  "backTooltip": "XP Lamp",
+			  "backInfo": "<b>XP Lamp</b><br /><br />An experience lamp containing 25,000 XP to be used on any skill."
 			},
 			{
-			  "front": "2025/newsposts/2025-01-08/R2T5-T.png",
-			  "back": "2025/newsposts/2025-01-08/R2T5-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-01-08/R2T5-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-01-08/R2T5-R.png",
 			  "frontTooltip": "Cook a shark while wearing a Chef's hat.",
-			  "backTooltip": "Corrupted Shark"
+			  "backTooltip": "Corrupted Shark",
+			  "backInfo": "<b>Corrupted Shark</b><br /><br />A Shark that isn't consumed when eaten.<br /><br />Heals a base of 20 hitpoints."
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2025/newsposts/2025-10-07/R2T7-T.png",
-			  "back": "2025/newsposts/2025-10-07/R2T7-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-10-07/R2T7-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-10-07/R2T7-R.png",
 			  "frontTooltip": "Complete the Inferno in 30 minutes or less.",
-			  "backTooltip": "Guardian"
+			  "backTooltip": "Guardian",
+			  "backInfo": "<b>Guardian</b><br /><br />This item will allow you to summon a powerful Guardian Thrall, lasting 30 minutes The guardian will attack your target with whatever style it is weak to.<br /><br />When you are in multi-combat it will cast an AoE attack if the target is weak to range or magic.<br /><br />The Guardian's stats are:<br />Min hit: 5<br />Max hit: 13<br />Attack Speed: 4<br /><br />The Guardian does not work in PvP.<br /><br />This perk will also work inside The Gauntlet"
 			},
 			// Row 3
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-",
 			},
 			{
-			  "front": "2025/newsposts/20205-06-06/R3T1-T.png",
-			  "back": "2025/newsposts/20205-06-06/R3T1-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/20205-06-06/R3T1-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/20205-06-06/R3T1-R.png",
 			  "frontTooltip": "Obtain some Valuables from a house in Varlamore.",
-			  "backTooltip": "Golden God"
+			  "backTooltip": "Golden God",
+			  "backInfo": "<b>Golden God</b><br /><br />You gain the following perks to the High and Low Alchemy spells:<ul><li>The spells have no rune cost or level requirement.</li><li>Items give 15% more gold, and have a 65% chance to not be consumed.</li><li>When cast on a stack of items, the spells will automatically be recast over time, until the stack is depleted or moved.</li></ul><br />You gain the following perks to Prayer:<br /><br /><ul><li>20,000 Coins can be offered at Prayer altars in exchange for Prayer XP equivalent to using a dragon bone.</li></ul><i>This respects altar XP modifiers. Normal altars have no modifiers.</i><br /><br />All items purchased from some select shops can be noted, provided the item can be noted at all.<br /><br />There will be a new button on select shops which toggles this effect."
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2024/newsposts/2024-03-20/steamforgebrew.png",
-			  "back": "2024/newsposts/2024-03-20/steamforgebrew-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2024/newsposts/2024-03-20/steamforgebrew.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2024/newsposts/2024-03-20/steamforgebrew-R.png",
 			  "frontTooltip": "Boiling iron breath, Forge-fire warms the drinker's soul, Courage in each gulp.",
 			  "frontInfo": "Boiling iron breath,<br /><br />Forge-fire warms the drinker's soul,<br /><br />Courage in each gulp.",
 			  "backTooltip": "-R",
 			  "found": "riddle"
 			},
 			{
-			  "front": "2025/newsposts/2025-01-09/R3T4-T.png",
-			  "back": "2025/newsposts/2025-01-09/R3T4-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-01-09/R3T4-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-01-09/R3T4-R.png",
 			  "frontTooltip": "Chop Maple Logs.",
 			  "backTooltip": "Power Miner, Lumberjack, or Animal Wrangler",
+			  "backInfo": [
+					{
+						"image": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/PM.png",
+						"info": "<b>Power Miner</b><br /><br />This pickaxe will act as a non-degradable variant of the crystal equivalent with no requirements.<br /><br />When this item is in your inventory or equipped, you gain the following perks:<br /><br /><ul><li>On failing to mine a rock, you will have a separate 50% chance to succeed.</li><li>Items gathered from Mining are automatically sent to your Bank.</li><li>The Echo Pickaxe will cause the rock to not deplete until you have mined 4 ore.</li><li>This buff stacks with Mining Gloves, up to 7 ores per node.</li></ul><br />You can toggle these effects on/off:<br /><br /><ul><li>Auto-smelt ores for Smithing XP (any level).</li><li>Auto-cut gems for Crafting XP (any level).</li></ul>"
+					},
+					{
+						"image": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/LJ.png",
+						"info": "<b>Lumberjack</b><br /><br />This axe will act as a non-degradable variant of the crystal equivalent with no requirements.<br /><br />When this item is in your inventory or equipped, you gain the following perks:<br /><br /><ul><li>On failing to chop a tree, you have a separate 50% chance to succeed.</li><li>Logs are automatically sent to your Bank.</li></ul><br />Toggle effects:<br /><br /><ul><li>Auto-burn logs for Firemaking XP (any level).</li><li>Auto-fletch logs into arrowshafts for Fletching XP (any level).</li></ul><br />You will also never fail to make fires at any Firemaking level."
+					},
+					{
+						"image": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/AW.png",
+						"info": "<b>Animal Wrangler</b><br /><br />This harpoon will act as a non-degradable variant of the crystal equivalent with no requirements.<br /><br />When in your inventory or equipped:<br /><br /><ul><li>50% chance to succeed when failing to fish.</li><li>Fish automatically banked.</li><li>50% chance fish are cooked for Cooking XP.</li><li>Fish 1 tick faster and functions as all fishing tools.</li></ul><br />Also grants Hunter perks:<br /><br /><ul><li>Never fail catches, chinchompas doubled with double XP.</li><li>Impling jars never break.</li></ul><br />Lastly, you never burn food while Cooking."
+					}
+				],
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2001/newsposts/2001-06-11/potato.png",
-			  "back": "2001/newsposts/2001-06-11/potato-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2001/newsposts/2001-06-11/potato.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2001/newsposts/2001-06-11/potato-R.png",
 			  "frontTooltip": "Buried in brown earth, Simple strength for weary hands, A meal, hard-earned, warm.",
 			  "frontInfo": "Buried in brown earth,<br /><br />Simple strength for weary hands,<br /><br />A meal, hard-earned, warm.",
 			  "backTooltip": "-R",
 			  "found": "riddle"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			// Row 4
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-",
 			  "reward": true
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/R4T1-T.png",
-			  "back": "2025/newsposts/2025-09-23/R4T1-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/R4T1-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/R4T1-R.png",
 			  "frontTooltip": "Gain over 30,000 coins from one Alchemy spell.",
-			  "backTooltip": "Production Prodigy"
+			  "backTooltip": "Production Prodigy",
+			  "backInfo": "<b>Production Prodigy</b><br /><br />When doing the following activities, all items are processed at once:<br /><ul><li>Smelting ores, Smithing bars (does not work with the Superheat item spell) and making Cannonballs</li><li>Fletching logs, stringing Bows and cutting bolt tips</li><li>Making headless arrows, regular arrows, bolts, darts, and javelins (capped at 10x the regular amount per action.)</li><li>Cleaning herbs and making Potions which do no have a stackable secondary ingredient.</li><li>Cooking food and making Jugs of Wine.</li><li>Crafting leather, uncut gems, glassblowing, jewellery pottery, Battlestaves and spinning flax or wool.</li></ul><br />Full XP is given for items processed using this relic.<br /><br />There is a 25% chance that you will make an extra product, which will be sent to your Bank if you have space. The additional product will also grant XP.<br /><br />Additionally Crafting, Smithing, Herblore, Fletching and Cooking are boosted by +12."
 			},
 			{
-			  "front": "2002/newsposts/2002-07-23/cupoftea.png",
-			  "back": "2002/newsposts/2002-07-23/cupoftea-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2002/newsposts/2002-07-23/cupoftea.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2002/newsposts/2002-07-23/cupoftea-R.png",
 			  "frontTooltip": "Not potion, nor spell, Still the hand that sips finds peace, Warmth cloaks mortal will.",
 			  "frontInfo": "Not potion, nor spell,<br /><br />Still the hand that sips finds peace,<br /><br />Warmth cloaks mortal will.",
 			  "backTooltip": "-",
 			  "found": "riddle"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "I was one of the first you saw, overlooked and forgotten like always...",
 			  "backTooltip": "-",
 			  "found": "hint"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/R4T4-T.png",
-			  "back": "2025/newsposts/2025-09-23/R4T4-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/R4T4-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/R4T4-R.png",
 			  "frontTooltip": "Complete the Grid Master Tutorial.",
-			  "backTooltip": "Power Miner, Lumberjack, or Animal Wrangler"
+			  "backTooltip": "Power Miner, Lumberjack, or Animal Wrangler",
+			  "backInfo": [
+					{
+						"image": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/PM.png",
+						"info": "<b>Power Miner</b><br /><br />This pickaxe will act as a non-degradable variant of the crystal equivalent with no requirements.<br /><br />When this item is in your inventory or equipped, you gain the following perks:<br /><br /><ul><li>On failing to mine a rock, you will have a separate 50% chance to succeed.</li><li>Items gathered from Mining are automatically sent to your Bank.</li><li>The Echo Pickaxe will cause the rock to not deplete until you have mined 4 ore.</li><li>This buff stacks with Mining Gloves, up to 7 ores per node.</li></ul><br />You can toggle these effects on/off:<br /><br /><ul><li>Auto-smelt ores for Smithing XP (any level).</li><li>Auto-cut gems for Crafting XP (any level).</li></ul>"
+					},
+					{
+						"image": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/LJ.png",
+						"info": "<b>Lumberjack</b><br /><br />This axe will act as a non-degradable variant of the crystal equivalent with no requirements.<br /><br />When this item is in your inventory or equipped, you gain the following perks:<br /><br /><ul><li>On failing to chop a tree, you have a separate 50% chance to succeed.</li><li>Logs are automatically sent to your Bank.</li></ul><br />Toggle effects:<br /><br /><ul><li>Auto-burn logs for Firemaking XP (any level).</li><li>Auto-fletch logs into arrowshafts for Fletching XP (any level).</li></ul><br />You will also never fail to make fires at any Firemaking level."
+					},
+					{
+						"image": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/AW.png",
+						"info": "<b>Animal Wrangler</b><br /><br />This harpoon will act as a non-degradable variant of the crystal equivalent with no requirements.<br /><br />When in your inventory or equipped:<br /><br /><ul><li>50% chance to succeed when failing to fish.</li><li>Fish automatically banked.</li><li>50% chance fish are cooked for Cooking XP.</li><li>Fish 1 tick faster and functions as all fishing tools.</li></ul><br />Also grants Hunter perks:<br /><br /><ul><li>Never fail catches, chinchompas doubled with double XP.</li><li>Impling jars never break.</li></ul><br />Lastly, you never burn food while Cooking."
+					}
+				],
 			},
 			{
-			  "front": "2006/newsposts/2006-07-04/fancyboots.png",
-			  "back": "2006/newsposts/2006-07-04/fancyboots-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2006/newsposts/2006-07-04/fancyboots.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2006/newsposts/2006-07-04/fancyboots-R.png",
 			  "frontTooltip": "Gleam on tattered roads, Colours proud on novice feet, Style before the stats.",
 			  "frontInfo": "Gleam on tattered roads,<br /><br />Colours proud on novice feet,<br /><br />Style before the stats.",
 			  "backTooltip": "-R",
 			  "found": "riddle"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "The sixth brother, but never thought as an equal to them. I'm glad I am important to you.",
 			  "backTooltip": "-",
 			  "found": "hint"
 			},
 			{
-			  "front": "2002/newsposts/2002-07-23/magicgoldfeather.png",
-			  "back": "2002/newsposts/2002-07-23/magicgoldfeather-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2002/newsposts/2002-07-23/magicgoldfeather.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2002/newsposts/2002-07-23/magicgoldfeather-R.png",
 			  "frontTooltip": "Golden feather falls, Guiding knights through mist and myth, Faith finds what is lost.",
 			  "frontInfo": "Golden feather falls,<br /><br />Guiding knights through mist and myth,<br /><br />Faith finds what is lost.",
 			  "backTooltip": "-R",
@@ -588,157 +671,180 @@
 			},
 			// Row 5
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-",
 			  "reward": true
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2024/newsposts/2024-03-20/moonlightmoth.png",
-			  "back": "2024/newsposts/2024-03-20/moonlightmoth-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2024/newsposts/2024-03-20/moonlightmoth.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2024/newsposts/2024-03-20/moonlightmoth-R.png",
 			  "frontTooltip": "Moonlight softly hums, Silver wings kiss midnight air, Dreams take flight unseen.",
 			  "frontInfo": "Moonlight softly hums,<br /><br />Silver wings kiss midnight air,<br /><br />Dreams take flight unseen.",
 			  "backTooltip": "-R",
 			  "found": "riddle"
 			},
 			{
-			  "front": "2025/newsposts/2025-10-07/R5T3-T.png",
-			  "back": "2025/newsposts/2025-10-07/R5T3-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-10-07/R5T3-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-10-07/R5T3-R.png",
 			  "frontTooltip": "Subdue Tempoross.",
-			  "backTooltip": "Craftsman"
+			  "backTooltip": "Craftsman",
+			  "backInfo": "<b>Craftsman</b><br /><br />You gain the Craftsman benefit. You select three Artisan skills, then whenever you gain XP in one of your 3 selected Craftsman skills, you'll gain 50% of that XP in the other 2 selected skills.<br /><br />Available skills are: Construction, Cooking, Crafting, Firemaking, Fletching, Herblore, Runecraft and Smithing."
 			},
 			{
-			  "front": "2025/newsposts/2025-01-13/R5T4-T.png",
-			  "back": "2025/newsposts/2025-01-09/R3T4-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-01-13/R5T4-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-01-09/R3T4-R.png",
 			  "frontTooltip": "Mine Gold Ore",
 			  "backTooltip": "Power Miner, Lumberjack, or Animal Wrangler",
+			  "backInfo": [
+					{
+						"image": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/PM.png",
+						"info": "<b>Power Miner</b><br /><br />This pickaxe will act as a non-degradable variant of the crystal equivalent with no requirements.<br /><br />When this item is in your inventory or equipped, you gain the following perks:<br /><br /><ul><li>On failing to mine a rock, you will have a separate 50% chance to succeed.</li><li>Items gathered from Mining are automatically sent to your Bank.</li><li>The Echo Pickaxe will cause the rock to not deplete until you have mined 4 ore.</li><li>This buff stacks with Mining Gloves, up to 7 ores per node.</li></ul><br />You can toggle these effects on/off:<br /><br /><ul><li>Auto-smelt ores for Smithing XP (any level).</li><li>Auto-cut gems for Crafting XP (any level).</li></ul>"
+					},
+					{
+						"image": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/LJ.png",
+						"info": "<b>Lumberjack</b><br /><br />This axe will act as a non-degradable variant of the crystal equivalent with no requirements.<br /><br />When this item is in your inventory or equipped, you gain the following perks:<br /><br /><ul><li>On failing to chop a tree, you have a separate 50% chance to succeed.</li><li>Logs are automatically sent to your Bank.</li></ul><br />Toggle effects:<br /><br /><ul><li>Auto-burn logs for Firemaking XP (any level).</li><li>Auto-fletch logs into arrowshafts for Fletching XP (any level).</li></ul><br />You will also never fail to make fires at any Firemaking level."
+					},
+					{
+						"image": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/AW.png",
+						"info": "<b>Animal Wrangler</b><br /><br />This harpoon will act as a non-degradable variant of the crystal equivalent with no requirements.<br /><br />When in your inventory or equipped:<br /><br /><ul><li>50% chance to succeed when failing to fish.</li><li>Fish automatically banked.</li><li>50% chance fish are cooked for Cooking XP.</li><li>Fish 1 tick faster and functions as all fishing tools.</li></ul><br />Also grants Hunter perks:<br /><br /><ul><li>Never fail catches, chinchompas doubled with double XP.</li><li>Impling jars never break.</li></ul><br />Lastly, you never burn food while Cooking."
+					}
+				],
 			},
 			{
-			  "front": "2025/newsposts/2025-02-12/R5T5-T.png",
-			  "back": "2025/newsposts/2025-02-12/R5T5-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-02-12/R5T5-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-02-12/R5T5-R.png",
 			  "frontTooltip": "Witness the Gemstone Crab burrow away.",
-			  "backTooltip": "Gatherer"
+			  "backTooltip": "Gatherer",
+			  "backInfo": "<b>Gatherer</b><br /><br />You gain the Gatherer benefit. You select three Gathering or Support skills, then whenever you gain XP in one of your 3 selected Gathering or Support skills, you'll gain 50% of that XP in the other 2 selected skills.<br /><br />Available skills are: Mining, Fishing, Woodcutting, Hunter, Agility, Slayer and Thieving."
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			// Row 6
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
 			  "frontTooltip": "Damned If You Do...",
 			  "backTooltip": "Damned If You Don't...",
 			  "found": "hint"
 			},
 			{
-			  "front": "2025/newsposts/2025-01-15/R6T1-T.png",
-			  "back": "2025/newsposts/2025-01-15/R6T1-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-01-15/R6T1-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-01-15/R6T1-R.png",
 			  "frontTooltip": "Defeat all 4 Awakened bosses.",
 			  "backTooltip": "Battlehat",
+			  "backInfo": "<b>Battlehat</b><br /><br />A tribrid helmet with no negative bonuses, that also functions as a slayer helm.<br /><br />Attack Bonuses<br />Stab: + 15<br />Slash: + 15<br />Crush: + 15<br />Magic: + 15<br />Range: + 15<br /><br />Defence Bonuses<br />Stab: + 60<br />Slash: + 60<br />Crush: + 60<br />Magic: + 60<br />Range: + 60<br /><br />Other Stats<br />Melee Str: + 10<br />Range Str: + 5<br />Magic Str: + 5%<br />Prayer: + 10"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2013/newsposts/2013-10-17/gwd.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2007/newsposts/2007-08-28/kreearra.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2013/newsposts/2013-10-17/gwd.png",
 			  "frontTooltip": "K G Z K R R I R E A L I E A Y L A R A N R D N E R O A X A R",
-			  "frontInfo": "K G Z K R R I R E A L I E A Y L A R A N R D N E R O A X A R<br /><br />(Anagram for KREE ARRA, GRAARDOR, ZILYANA, KRIL, NEX)",
+			  "frontInfo": "K G Z K R R I R E A L I E A Y L A R A N R D N E R O A X A R<br /><br /><i>Anagram for KREE ARRA, GRAARDOR, ZILYANA, KRIL, NEX<br /><br />Assumed location.</i>",
 			  "backTooltip": "-",
+			  "backInfo": "<i>gwd.png<br /><br />Assumed location.</i>",
 			  "found": "riddle"
 			},
 			{
-			  "front": "2025/newsposts/2025-01-22/R6T4-T.png",
-			  "back": "2025/newsposts/2025-01-22/R6T4-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-01-22/R6T4-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-01-22/R6T4-R.png",
 			  "frontTooltip": "Open Bryophyta's Chest.",
 			  "backTooltip": "Combat Masteries",
+			  "backInfo": "<b>Combat Masteries</b><br /><br /><b>All Combat Masteries increase by 1 tier.</b><br /><br />Melee I: Melee hits have a 25% chance to roll damage twice and take the highest result.<br />Ranged I: Damage rolls beneath 30% of max hit with Ranged are increased to 30%.<br />Magic I: When you roll above 90% of your max hit with Magic, damage is increased by 50%.<br />Passive: 95% chance to save weapon charges, ammunition, and runes used for spells.<br /><br />Melee II Melee hits have a 10% chance to generate an echo hit. (Additional melee hit, 50% max-hit, respects Accuracy, PvM only).<br />Ranged II: Each subsequent Ranged attack has its max hit increased by an additional 5%. Resets after +20%.<br />Magic II: Magic max hit is increased by 5% per tick in-between your attacks (Up to +40%).<br />Passive: Healing from all sources is increased by 20%.<br /><br />Melee III: Melee attack rate set to 80%, rounding down.<br />Ranged III: Ranged attack rate set to 80%, rounding down.<br />Magic III: Magic attack rate set to 80%, rounding down.<br />Passive: Accuracy with all styles is increased by 100%.<br /><br />Melee IV: Melee hits have a 5% chance to heal 40% of damage dealt<br />Ranged IV: Every 5th Ranged hit, heal 5 hitpoints.<br />Magic IV: When you roll above 90% of your max hit with Magic, heal 10% of damage dealt.<br />Passive: Damage taken is reduced by 15%.<br /><br />Melee V: Melee attack rate set to 50%, rounded down for 5t and above, rounded up below 4t.<br />Ranged V: Ranged attack rate set to 50%, rounded down for 5t and above, rounded up below 4t.<br />Magic V: Magic attack rate set to 50%, rounded down for 5t and above, rounded up below 4t.<br />Passive: Prayer Point gain from all sources is increased by 25%.<br /><br />Melee VI: Your chance to generate a Melee echo increases to 20%, and your echoes can generate additional echoes (Up to 8 times in a row).<br />Ranged VI: Never miss with Ranged (PvM only).<br />Magic VI: On a successful Magic hit, if your target has less Hitpoints than your max hit, you max hit. Max hit with Magic is increased by 1% for every 100 Hitpoints remaining on target (Up to 10%).<br />Passive: Attacks with all styles now have 60% Prayer penetration."
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "Blood, Sweat, Sweat, Sweat and Tears",
 			  "backTooltip": "Ricktor, Aiva, Ohn, Serafina, Atlax",
 			  "found": "hint"
 			},
 			// Row 7
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2025/newsposts/20205-06-06/R7T1-T.png",
-			  "back": "2025/newsposts/20205-06-06/R7T1-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/20205-06-06/R7T1-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/20205-06-06/R7T1-R.png",
 			  "frontTooltip": "Obtain a rare unique from Tombs of Amascut.",
-			  "backTooltip": "Mega Rare Scroll"
+			  "backTooltip": "Mega Rare Scroll",
+			  "backInfo": "<b>Mega Rare Scroll</b><br /><br />You gain the Mega Rare Scroll.<br /><br />Choose one of the three mega rares from raids: Scythe of Vitur, Tumeken's Shadow or Twisted Bow."
 			},
 			{
-			  "front": "2025/newsposts/2025-01-28/R7T2-T.png",
-			  "back": "2025/newsposts/2025-01-28/R7T2-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-01-28/R7T2-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-01-28/R7T2-R.png",
 			  "frontTooltip": "Build a Demonic Throne in your Player Owned House.",
 			  "backTooltip": "Thunder Kopesh",
+			  "backInfo": "<b>Thunder Kopesh</b><br /><br />A powerful Khopesh, imbued with the power of thunder and lightning.<br /><br />Deals full damage to the Corporeal Beast<br /><br />Has a 20% chance to trigger a AoE lightning bolt under the target, hitting anything in a 1 tile radius, which rolls with 50% of the original attacks max hit.<br /><br />Special Attack - 50%<br />Attacks twice. If either attack is successful an additional lightning bolt is summoned rolling up to 100% of the original attacks max hit.<br /><br />Attack Bonuses<br />Stab: + 65<br />Slash: + 110<br /><br />Other Stats<br />Melee Str: + 100<br />Attack Speed: 4 ticks<br />Attack Range: 1 tile"
 			},
 			{
-			  "front": "2025/newsposts/2025-01-29/R7T3-T.png",
-			  "back": "2025/newsposts/2025-01-29/R7T3-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-01-29/R7T3-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-01-29/R7T3-R.png",
 			  "frontTooltip": "Deposit a Skillcape into your Player Owned House.",
-			  "backTooltip": "Spikey Aura"
+			  "backTooltip": "Spikey Aura",
+			  "backInfo": "<b>Spikey Aura</b><br /><br />You reflect at least 25% of damage received. This effect stacks with other recoil effects."
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/R7T4-T.png",
-			  "back": "2025/newsposts/2025-09-23/R7T4-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/R7T4-T.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/R7T4-R.png",
 			  "frontTooltip": "Defeat the Lesser Demon in the Wizards Tower",
-			  "backTooltip": "Minimum Potential"
+			  "backTooltip": "Minimum Potential",
+			  "backInfo": "<b>Minimum Potential</b><br /><br />You gain the Minimum Potential perk. Your Melee, Ranged & Magic hits will never deal below 5 damage.<br /><br /><i>You can still miss your attacks.</i>"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2025/newsposts/2025-07-23/humphreydumphrey.png",
-			  "back": "2025/newsposts/2025-07-23/humphreydumphrey-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-07-23/humphreydumphrey.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-07-23/humphreydumphrey-R.png",
 			  "frontTooltip": "Cracked upon the wall, Shell of pride and yolk of fear, Fall, respawn, repeat.",
 			  "frontInfo": "Cracked upon the wall,<br /><br />Shell of pride and yolk of fear,<br /><br />Fall, respawn, repeat.",
 			  "backTooltip": "-R",
 			  "found": "riddle"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Tile-M.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Tile-M.png",
 			  "frontTooltip": "I'm a secret. Flip me over to find out more.",
 			  "backTooltip": "Well done"
 			},
@@ -750,46 +856,48 @@
 			  "backTooltip": ""
 			},
 			{
-			  "front": "2024/newsposts/2024-11-27/thedogsword.gif",
-			  "back": "2024/newsposts/2024-11-27/thedogsword.gif",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2024/newsposts/2024-11-27/thedogsword.gif",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2024/newsposts/2024-11-27/thedogsword.gif",
 			  "frontTooltip": "Woof",
 			  "backTooltip": "-",
 			  "found": "hint"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
 			  "frontTooltip": "Pull The Lever Krunk!",
 			  "backTooltip": "WRONG LEVEEEER!",
 			  "found": "hint"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2025/newsposts/2025-02-05/RR1.png",
-			  "back": "2025/newsposts/2025-02-05/RR1.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-02-05/RR1.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-02-05/RR1.png",
 			  "frontTooltip": "+200% XP for all skills",
 			  "backTooltip": "+200% XP for all skills"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
 			  "frontTooltip": "-",
 			  "backTooltip": "-"
 			},
 			{
-			  "front": "2025/newsposts/2025-05-30/RR6.png",
-			  "back": "2025/newsposts/2025-05-30/RR6-R.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-05-30/RR6.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-05-30/RR6-R.png",
 			  "frontTooltip": "Sunlight Spear",
-			  "backTooltip": "Sunlit bracers"
+			  "frontInfo": "<b>Sunlight Spear</b><br /><br />A weapon from a being that truly worships gods.<br /><br />Gains a Sunlight stack every attack, up to a max of 20.<br /><br />Special Attack:<br />7 Sunlight stacks - Hit every NPC within 3 tiles of the player, damage is increased by 3% per prayer bonus.<br /><br />Attack Bonuses<br />Stab: + 125<br />Slash: + 75<br /><br />Defence Bonuses<br />Stab: + 70<br />Slash: + 70<br />Crush: + 70<br />Magic: + 28<br />Range: + 70<br /><br />Other Stats<br />Melee Str: + 113<br />Attack Speed: 5 ticks<br />Attack Range: 1 tile",
+			  "backTooltip": "Sunlit bracers",
+			  "backInfo": "<b>Sunlit bracers</b><br /><br />Two bracers that provide a divine connection to the Sun God.<br /><br />All healing received is increased by 100% (Additive with other modifiers)<br /><br />Attack Bonuses<br />Stab: + 10<br />Slash: + 10<br />Crush: + 10<br />Magic: + 6<br />Range: + 18<br /><br />Defence Bonuses<br />Stab: + 12<br />Slash: + 12<br />Crush: + 12<br />Magic: + 6<br />Range: + 12<br /><br />Other Stats<br />Melee Str: + 8<br />Range Str: + 4"
 			},
 			{
-			  "front": "2025/newsposts/2025-09-23/GM-Reward-E.png",
-			  "back": "2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "front": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
+			  "back": "https://cdn.runescape.com/assets/img/external/oldschool/2025/newsposts/2025-09-23/GM-Reward-E.png",
 			  "frontTooltip": "Travel Back In Time",
 			  "backTooltip": "Through The Files And Flames",
 			  "found": "hint"
@@ -798,8 +906,8 @@
 
         // Unplaced tiles configuration - Add tiles here that don't have known positions
         const unplacedTiles = [
-            { image: "2002/newsposts/2002-02-27/dramenstaff.png", tooltip: "Found by clicking Dramen Staff" },
-            { image: "2003/newsposts/2003-01-28/cheerleader.png", tooltip: "Unknown location" }
+            { image: "2002/newsposts/2002-02-27/dramenstaff.png", tooltip: "dramenstaff.png discovered by clicking Dramen Staff in the news post." },
+            { image: "2003/newsposts/2003-01-28/cheerleader.png", tooltip: "cheerleader.png discovered by following the clue of the flashing gnome cheerleader." },
         ];
 
         const board = document.getElementById('board');
@@ -816,13 +924,80 @@
             position: null,
             status: null,
             isFlipped: false,
-            hasBack: false
+            hasBack: false,
+            currentTabIndex: 0
         };
+
+        function renderModalInfo(info) {
+            const modalInfo = document.getElementById('modal-info');
+            const tabsContainer = document.getElementById('modal-tabs-container');
+            
+            // Clear previous content
+            tabsContainer.innerHTML = '';
+            modalInfo.innerHTML = '';
+            
+            // Check if info is an array (tabbed content)
+            if (Array.isArray(info) && info.length > 0) {
+                // Create tabs
+                const tabsDiv = document.createElement('div');
+                tabsDiv.className = 'modal-tabs';
+                
+                const contentDivs = [];
+                
+                info.forEach((tab, index) => {
+                    // Create tab button
+                    const tabBtn = document.createElement('div');
+                    tabBtn.className = 'modal-tab';
+                    if (index === currentModalData.currentTabIndex) {
+                        tabBtn.classList.add('active');
+                    }
+                    tabBtn.style.backgroundImage = `url(${tab.image})`;
+                    tabBtn.onclick = () => switchTab(index);
+                    tabsDiv.appendChild(tabBtn);
+                    
+                    // Create content div
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'modal-tab-content';
+                    if (index === currentModalData.currentTabIndex) {
+                        contentDiv.classList.add('active');
+                    }
+                    contentDiv.innerHTML = tab.info || 'No information available';
+                    contentDivs.push(contentDiv);
+                });
+                
+                tabsContainer.appendChild(tabsDiv);
+                contentDivs.forEach(div => modalInfo.appendChild(div));
+            } else {
+                // Single content (string)
+                modalInfo.innerHTML = info || 'No information available';
+            }
+        }
+
+        function switchTab(index) {
+            currentModalData.currentTabIndex = index;
+            const tabs = document.querySelectorAll('.modal-tab');
+            const contents = document.querySelectorAll('.modal-tab-content');
+            
+            tabs.forEach((tab, i) => {
+                if (i === index) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            contents.forEach((content, i) => {
+                if (i === index) {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+        }
 
         // Modal functions
         function openModal(frontImage, backImage, frontInfo, backInfo, position = null, status = null, startFlipped = false) {
             const modalImage = document.getElementById('modal-image');
-            const modalInfo = document.getElementById('modal-info');
             const modalPosition = document.getElementById('modal-position');
             const modalPositionLabel = document.getElementById('modal-position-label');
             const flipBtn = document.getElementById('flip-modal-btn');
@@ -836,7 +1011,8 @@
                 position: position,
                 status: status,
                 isFlipped: startFlipped,
-                hasBack: backImage && backImage !== frontImage
+                hasBack: backImage && backImage !== frontImage,
+                currentTabIndex: 0
             };
             
             // Show/hide flip button based on whether there's a different back image
@@ -849,11 +1025,11 @@
             // Set initial state based on startFlipped
             if (startFlipped) {
                 modalImage.src = backImage;
-                modalInfo.innerHTML = backInfo || 'No information available';
+                renderModalInfo(backInfo);
                 flipBtn.textContent = 'Show Front';
             } else {
                 modalImage.src = frontImage;
-                modalInfo.innerHTML = frontInfo || 'No information available';
+                renderModalInfo(frontInfo);
                 flipBtn.textContent = 'Show Back';
             }
             
@@ -878,18 +1054,18 @@
 
         function flipModalTile() {
             const modalImage = document.getElementById('modal-image');
-            const modalInfo = document.getElementById('modal-info');
             const flipBtn = document.getElementById('flip-modal-btn');
             
             currentModalData.isFlipped = !currentModalData.isFlipped;
+            currentModalData.currentTabIndex = 0; // Reset to first tab when flipping
             
             if (currentModalData.isFlipped) {
                 modalImage.src = currentModalData.backImage;
-                modalInfo.innerHTML = currentModalData.backInfo || 'No information available';
+                renderModalInfo(currentModalData.backInfo);
                 flipBtn.textContent = 'Show Front';
             } else {
                 modalImage.src = currentModalData.frontImage;
-                modalInfo.innerHTML = currentModalData.frontInfo || 'No information available';
+                renderModalInfo(currentModalData.frontInfo);
                 flipBtn.textContent = 'Show Back';
             }
         }
@@ -941,7 +1117,7 @@
                 const front = document.createElement('div');
                 front.className = 'tile-face tile-front';
                 if (config.front) {
-                    front.innerHTML = `<img class="tile-image" src="https://cdn.runescape.com/assets/img/external/oldschool/${config.front}" alt="Front">`;
+                    front.innerHTML = `<img class="tile-image" src="${config.front}" alt="Front">`;
                 } else {
                     front.classList.add('tile-blank');
                 }
@@ -956,7 +1132,7 @@
                 const back = document.createElement('div');
                 back.className = 'tile-face tile-back';
                 if (config.back) {
-                    back.innerHTML = `<img class="tile-image" src="https://cdn.runescape.com/assets/img/external/oldschool/${config.back}" alt="Back">`;
+                    back.innerHTML = `<img class="tile-image" src="${config.back}" alt="Back">`;
                 } else {
                     back.classList.add('tile-blank');
                 }
@@ -1025,7 +1201,7 @@
                 tile.className = 'tile-face unplaced-tile';
                 
                 if (config.image) {
-                    tile.innerHTML = `<img class="tile-image" src="https://cdn.runescape.com/assets/img/external/oldschool/${config.image}" alt="Unplaced tile">`;
+                    tile.innerHTML = `<img class="tile-image" src="${config.image}" alt="Unplaced tile">`;
                 } else {
                     tile.classList.add('tile-blank');
                 }
