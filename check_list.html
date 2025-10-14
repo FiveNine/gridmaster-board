@@ -203,9 +203,45 @@
             color: #856404;
             font-weight: 600;
         }
+		
+        .button-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-button {
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 2px solid #667eea;
+            display: inline-block;
+        }
+
+        .nav-button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-button:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
+	<div class="button-row">
+		<a href="./index.html" class="nav-button">Gridmaster Leaks and Speculation</a>
+		<a href="./wiki-cdn-eval.user.js.txt" class="nav-button" alt="Evaluates wiki pages for matching CDN image tiles">Wiki CDN Tampermonkey Script</a>
+	</div>
     <div class="container">
         <h1>🔍 File Existence Checker</h1>
         <p class="subtitle">Check if a file exists across multiple URL directories</p>

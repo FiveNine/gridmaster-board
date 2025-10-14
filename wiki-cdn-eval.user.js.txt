@@ -1,0 +1,120 @@
+// ==UserScript==
+// @name         OSRS Wiki CDN Image Link
+// @namespace    http://tampermonkey.net/
+// @version      1.4
+// @description  Adds a CDN image link next to the page title in OSRS Wiki
+// @author       Katfysh
+// @match        https://oldschool.runescape.wiki/*
+// @match        https://oldschool.runescape.wiki/w/*
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    // Function to check if image exists
+    function checkImage(url) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(true);
+            img.onerror = () => resolve(false);
+            img.src = url;
+        });
+    }
+
+    // Find the page title
+    const pageTitle = document.querySelector('.mw-page-title-main');
+    if (!pageTitle) return;
+
+    // Find the infobox
+    const infobox = document.querySelector('.infobox');
+    if (!infobox) return;
+
+    // Get the name from infobox-header
+    const headerElement = infobox.querySelector('.infobox-header');
+    if (!headerElement) return;
+
+    const name = headerElement.textContent.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // Find the Released row
+    const rows = infobox.querySelectorAll('tr');
+    for (let row of rows) {
+        const header = row.querySelector('th');
+        if (header && header.textContent.trim() === 'Released') {
+            const dataCell = row.querySelector('td');
+            if (!dataCell) continue;
+
+            // Parse the date
+            const dateLinks = dataCell.querySelectorAll('a');
+            let day = null;
+            let month = null;
+            let year = null;
+
+            for (let link of dateLinks) {
+                const title = link.getAttribute('title');
+                const text = link.textContent.trim();
+
+                // Check if it's a year (4 digits)
+                if (/^\d{4}$/.test(text)) {
+                    year = text;
+                }
+                // Check if it's a combined date link (e.g., "23 July")
+                else if (title && title.includes(' ')) {
+                    const parts = title.split(' ');
+                    if (parts.length === 2 && /^\d+$/.test(parts[0])) {
+                        day = parts[0];
+                        month = parts[1];
+                    }
+                }
+            }
+
+            if (!day || !month || !year) continue;
+
+            // Convert month name to number
+            const monthMap = {
+                'January': '01', 'February': '02', 'March': '03', 'April': '04',
+                'May': '05', 'June': '06', 'July': '07', 'August': '08',
+                'September': '09', 'October': '10', 'November': '11', 'December': '12'
+            };
+
+            const monthNum = monthMap[month];
+            if (!monthNum) continue;
+
+            // Pad day with leading zero if needed
+            const dayPadded = day.padStart(2, '0');
+
+            // Construct the CDN URL
+            const cdnUrl = `https://cdn.runescape.com/assets/img/external/oldschool/${year}/newsposts/${year}-${monthNum}-${dayPadded}/${name}.png`;
+
+            // Create the new link
+            const cdnLink = document.createElement('a');
+            cdnLink.href = cdnUrl;
+            cdnLink.target = '_blank';
+            cdnLink.textContent = 'Checking...';
+            cdnLink.style.marginLeft = '10px';
+            cdnLink.title = 'Checking...';
+
+            // Insert after the page title
+            pageTitle.parentNode.insertBefore(cdnLink, pageTitle.nextSibling);
+
+            // Check if image exists asynchronously
+            (async () => {
+                const exists = await checkImage(cdnUrl);
+
+                // Update the link styling based on existence
+                if (exists) {
+                    cdnLink.style.color = 'green';
+                    cdnLink.textContent = 'Valid Image!';
+                    cdnLink.title = 'Image exists';
+                } else {
+                    cdnLink.style.color = 'red';
+                    cdnLink.style.textDecoration = 'line-through';
+                    cdnLink.textContent = ':(';
+                    cdnLink.title = 'Image not found (404)';
+                }
+            })();
+
+            break;
+        }
+    }
+})();
