@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide Parser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .main-wrapper {
+            display: flex;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: calc(100vh - 40px);
+            overflow: hidden;
+            transition: max-height 0.3s ease, width 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            max-height: 50px;
+            width: 50px;
+        }
+
+        .sidebar.collapsed .sidebar-header span:first-child {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .sidebar-header span:first-child {
+            transition: opacity 0.3s, width 0.3s;
+        }
+
+        .sidebar-toggle {
+            font-size: 1.2em;
+            transition: transform 0.3s;
+            flex-shrink: 0;
+        }
+
+        .sidebar.collapsed .sidebar-toggle {
+            transform: rotate(180deg);
+        }
+
+        .toc-content {
+            padding: 15px;
+            max-height: calc(100vh - 170px);
+            overflow-y: auto;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.collapsed .toc-content {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .toc-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9em;
+            color: #495057;
+            border-left: 3px solid transparent;
+        }
+
+        .toc-item:hover {
+            background: #f8f9fa;
+            border-left-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .toc-item.active {
+            background: #e7e9fc;
+            border-left-color: #667eea;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .toc-controls {
+            padding: 10px 15px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .toc-button {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.75em;
+            cursor: pointer;
+            transition: all 0.2s;
+			margin-top: 0px;
+        }
+
+        .toc-button:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        .toc-button:active {
+            transform: translateY(0);
+        }
+
+        .container {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header .version {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .input-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .input-section.collapsed {
+            max-height: 0;
+            padding: 0 30px;
+        }
+
+        .input-toggle {
+            padding: 15px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: #495057;
+            transition: background 0.2s;
+        }
+
+        .input-toggle:hover {
+            background: #e9ecef;
+        }
+
+        .input-toggle-icon {
+            transition: transform 0.3s;
+        }
+
+        .input-section.collapsed ~ .input-toggle .input-toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .button-group {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .clear-button {
+            background: #dc3545;
+        }
+
+        .clear-button:hover {
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        .guide-content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: box-shadow 0.3s;
+        }
+
+        .section:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: background 0.3s;
+        }
+
+        .section-header:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+        }
+
+        .toggle-icon {
+            font-size: 1.2em;
+            transition: transform 0.3s;
+        }
+
+        .section.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+
+        .section-description {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            font-style: italic;
+            color: #495057;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .section-body {
+            padding: 20px;
+            background: white;
+            max-height: 2000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .section.collapsed .section-body {
+            max-height: 0;
+            padding: 0 20px;
+        }
+
+        .step {
+            padding: 10px 0;
+            padding-left: 25px;
+            position: relative;
+            line-height: 1.6;
+            color: #212529;
+        }
+
+        .step:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .step:hover {
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 30px;
+            color: #6c757d;
+        }
+
+        .empty-state p {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .help-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+			margin-top: 0px;
+        }
+
+        .help-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.8);
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #667eea;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #f8f9fa;
+            color: #495057;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .modal-body {
+            color: #495057;
+            line-height: 1.6;
+        }
+
+        .modal-body h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .modal-body code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .modal-body ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .modal-body li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header" onclick="toggleSidebar()">
+                <span>Table of Contents</span>
+                <span class="sidebar-toggle">▲</span>
+            </div>
+            <div class="toc-content" id="tocContent">
+                <div style="text-align: center; color: #6c757d; padding: 20px;">
+                    Parse a guide to see the table of contents
+                </div>
+            </div>
+            <div class="toc-controls">
+                <button class="toc-button" onclick="expandAll()">Expand All</button>
+                <button class="toc-button" onclick="collapseAll()">Collapse All</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="header">
+                <button class="help-button" onclick="toggleModal()">?</button>
+                <h1 id="guideName">Guide Parser</h1>
+                <div class="version" id="guideVersion">Paste your guide below</div>
+            </div>
+
+            <div class="input-toggle" id="inputToggle" onclick="toggleInput()" style="display: none;">
+                <span>📝 Edit Guide</span>
+                <span class="input-toggle-icon">▼</span>
+            </div>
+
+            <div class="input-section" id="inputSection">
+                <textarea id="guideInput" placeholder="Paste your guide text here..."></textarea>
+                <div class="button-group">
+                    <button onclick="parseGuide()">Parse Guide</button>
+                    <button class="clear-button" onclick="clearGuide()">Clear Saved Guide</button>
+                </div>
+            </div>
+
+        <div class="guide-content" id="guideContent">
+            <div class="empty-state">
+                <p>👆 Paste your guide above and click "Parse Guide"</p>
+                <small>The parser will automatically format sections and steps</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="helpModal" onclick="closeModalOnOutsideClick(event)">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📖 How Guide Parsing Works</h2>
+                <button class="modal-close" onclick="toggleModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <h3>Header Format</h3>
+                <ul>
+                    <li><strong>First non-empty line:</strong> Guide Title</li>
+                    <li><strong>Following lines until blank:</strong> Version/Description (optional)</li>
+                </ul>
+
+                <h3>Section Format</h3>
+                <ul>
+                    <li><strong>Non-indented text:</strong> Section headers</li>
+                    <li><strong>Lines after header (before steps):</strong> Section description</li>
+                    <li><strong>2+ blank lines:</strong> Start a new section</li>
+                </ul>
+
+                <h3>Step Format</h3>
+                <ul>
+                    <li><strong>Indented lines or lines starting with <code>-</code>:</strong> Steps within a section</li>
+                    <li><strong>More indentation:</strong> Sub-steps (nested)</li>
+                </ul>
+
+                <h3>Example</h3>
+                <code style="display: block; padding: 15px; margin-top: 10px; white-space: pre-wrap;">My Guide Name
+Version 1.0
+
+Section One
+This is a description of section one
+    Step 1 in section one
+    Step 2 in section one
+
+
+Section Two
+    First step
+    Second step</code>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load saved guide on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedGuide = localStorage.getItem('savedGuide');
+            if (savedGuide) {
+                document.getElementById('guideInput').value = savedGuide;
+                parseGuide();
+            }
+        });
+
+        function parseGuide() {
+            const input = document.getElementById('guideInput').value;
+            
+            // Save to localStorage
+            localStorage.setItem('savedGuide', input);
+            
+            // Collapse input section after parsing
+            const inputSection = document.getElementById('inputSection');
+            const inputToggle = document.getElementById('inputToggle');
+            inputSection.classList.add('collapsed');
+            inputToggle.style.display = 'flex';
+            
+            const allLines = input.split('\n');
+            
+            // Find guide name (first non-empty line)
+            let guideName = '';
+            let headerEndIndex = 0;
+            const versionLines = [];
+            
+            // Get the first non-empty line as guide name
+            for (let i = 0; i < allLines.length; i++) {
+                const trimmed = allLines[i].trim();
+                if (trimmed) {
+                    guideName = trimmed;
+                    headerEndIndex = i + 1;
+                    break;
+                }
+            }
+            
+            if (!guideName) {
+                alert('Please paste a valid guide with at least a title');
+                return;
+            }
+            
+            // Continue reading non-empty lines until we hit a blank line
+            for (let i = headerEndIndex; i < allLines.length; i++) {
+                const trimmed = allLines[i].trim();
+                if (!trimmed) {
+                    // Found blank line, header ends here
+                    headerEndIndex = i;
+                    break;
+                }
+                versionLines.push(trimmed);
+            }
+            
+            // Set the guide name and version/description
+            document.getElementById('guideName').textContent = guideName;
+            document.getElementById('guideVersion').textContent = versionLines.join(' • ') || '';
+            
+            // Parse sections - keep empty lines to detect breaks
+            const sections = [];
+            let currentSection = null;
+            let descriptionLines = [];
+            let consecutiveEmptyLines = 0;
+
+            for (let i = headerEndIndex; i < allLines.length; i++) {
+                const line = allLines[i];
+                const trimmed = line.trim();
+
+                // Detect empty lines
+                if (!trimmed) {
+                    consecutiveEmptyLines++;
+                    continue;
+                }
+
+                // Get indentation level
+                const indent = getIndentLevel(line);
+                const isIndented = indent > 0 || trimmed.startsWith('-');
+
+                // Multiple empty lines signal new section
+                if (consecutiveEmptyLines >= 2 && currentSection) {
+                    if (descriptionLines.length > 0) {
+                        currentSection.description = descriptionLines.join(' ');
+                        descriptionLines = [];
+                    }
+                    sections.push(currentSection);
+                    currentSection = null;
+                }
+                consecutiveEmptyLines = 0;
+
+                if (isIndented) {
+                    // This is a step
+                    if (currentSection) {
+                        // Add any accumulated description lines
+                        if (descriptionLines.length > 0) {
+                            currentSection.description = descriptionLines.join(' ');
+                            descriptionLines = [];
+                        }
+                        
+                        const stepText = trimmed.startsWith('-') ? 
+                            trimmed.substring(1).trim() : trimmed;
+                        
+                        currentSection.steps.push({
+                            text: stepText,
+                            indent: indent
+                        });
+                    }
+                } else {
+                    // This is either a new section header or a description line
+                    if (currentSection && currentSection.steps.length === 0) {
+                        // We're still in description phase (no steps added yet)
+                        descriptionLines.push(trimmed);
+                    } else {
+                        // New section
+                        if (currentSection) {
+                            if (descriptionLines.length > 0) {
+                                currentSection.description = descriptionLines.join(' ');
+                            }
+                            sections.push(currentSection);
+                        }
+                        currentSection = {
+                            title: trimmed,
+                            description: '',
+                            steps: []
+                        };
+                        descriptionLines = [];
+                    }
+                }
+            }
+
+            // Add the last section
+            if (currentSection) {
+                if (descriptionLines.length > 0) {
+                    currentSection.description = descriptionLines.join(' ');
+                }
+                sections.push(currentSection);
+            }
+
+            // Render sections
+            renderSections(sections);
+            
+            // Generate table of contents
+            generateTOC(sections);
+        }
+
+        function getIndentLevel(line) {
+            let count = 0;
+            for (let char of line) {
+                if (char === '\t') count++;
+                else if (char === ' ') count += 0.25; // 4 spaces = 1 tab
+                else break;
+            }
+            return Math.floor(count);
+        }
+
+        function renderSections(sections) {
+            const content = document.getElementById('guideContent');
+            content.innerHTML = '';
+
+            sections.forEach((section, index) => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'section';
+                sectionDiv.id = `section-${index}`;
+
+                const header = document.createElement('div');
+                header.className = 'section-header';
+                header.innerHTML = `
+                    <span>${section.title}</span>
+                    <span class="toggle-icon">▼</span>
+                `;
+                header.onclick = () => toggleSection(index);
+
+                sectionDiv.appendChild(header);
+
+                if (section.description) {
+                    const desc = document.createElement('div');
+                    desc.className = 'section-description';
+                    desc.textContent = section.description;
+                    sectionDiv.appendChild(desc);
+                }
+
+                // Only add body if there are steps
+                if (section.steps.length > 0) {
+                    const body = document.createElement('div');
+                    body.className = 'section-body';
+
+                    section.steps.forEach(step => {
+                        const stepDiv = document.createElement('div');
+                        stepDiv.className = 'step';
+                        stepDiv.style.paddingLeft = `${25 + (step.indent * 20)}px`;
+                        stepDiv.textContent = step.text;
+                        body.appendChild(stepDiv);
+                    });
+
+                    sectionDiv.appendChild(body);
+                } else {
+                    // No steps - make header non-clickable and remove toggle icon
+                    header.onclick = null;
+                    header.style.cursor = 'default';
+                    header.querySelector('.toggle-icon').style.display = 'none';
+                }
+
+                content.appendChild(sectionDiv);
+            });
+        }
+
+        function toggleSection(index) {
+            const section = document.getElementById(`section-${index}`);
+            section.classList.toggle('collapsed');
+        }
+
+        function clearGuide() {
+            if (confirm('Are you sure you want to clear the saved guide?')) {
+                localStorage.removeItem('savedGuide');
+                document.getElementById('guideInput').value = '';
+                document.getElementById('guideName').textContent = 'Guide Parser';
+                document.getElementById('guideVersion').textContent = 'Paste your guide below';
+                document.getElementById('guideContent').innerHTML = `
+                    <div class="empty-state">
+                        <p>👆 Paste your guide above and click "Parse Guide"</p>
+                        <small>The parser will automatically format sections and steps</small>
+                    </div>
+                `;
+                document.getElementById('tocContent').innerHTML = `
+                    <div style="text-align: center; color: #6c757d; padding: 20px;">
+                        Parse a guide to see the table of contents
+                    </div>
+                `;
+                // Show input section again
+                document.getElementById('inputSection').classList.remove('collapsed');
+                document.getElementById('inputToggle').style.display = 'none';
+            }
+        }
+
+        function toggleInput() {
+            const inputSection = document.getElementById('inputSection');
+            inputSection.classList.toggle('collapsed');
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+
+        function generateTOC(sections) {
+            const tocContent = document.getElementById('tocContent');
+            tocContent.innerHTML = '';
+
+            sections.forEach((section, index) => {
+                const tocItem = document.createElement('div');
+                tocItem.className = 'toc-item';
+                tocItem.textContent = section.title;
+                tocItem.onclick = () => scrollToSection(index);
+                tocContent.appendChild(tocItem);
+            });
+        }
+
+        function scrollToSection(index) {
+            const section = document.getElementById(`section-${index}`);
+            if (section) {
+                // Expand the section if it's collapsed
+                section.classList.remove('collapsed');
+                
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Highlight the active TOC item
+                document.querySelectorAll('.toc-item').forEach((item, i) => {
+                    if (i === index) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            }
+        }
+
+        function expandAll() {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('collapsed');
+            });
+        }
+
+        function collapseAll() {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('collapsed');
+            });
+        }
+
+        function toggleModal() {
+            const modal = document.getElementById('helpModal');
+            modal.classList.toggle('active');
+        }
+
+        function closeModalOnOutsideClick(event) {
+            if (event.target.id === 'helpModal') {
+                toggleModal();
+            }
+        }
+    </script>
+</body>
+</html>
