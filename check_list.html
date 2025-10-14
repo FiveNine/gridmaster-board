@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Existence Checker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #444;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .results {
+            margin-top: 30px;
+        }
+
+        .result-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 4px solid;
+            background: #f8f9fa;
+        }
+
+        .result-item.exists {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .result-item.not-exists {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .result-url {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            word-break: break-all;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .result-status {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .result-item.exists .result-status {
+            color: #155724;
+        }
+
+        .result-item.not-exists .result-status {
+            color: #721c24;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e7f3ff;
+            border-radius: 6px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .summary-text {
+            color: #0d47a1;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 File Existence Checker</h1>
+        <p class="subtitle">Check if a file exists across multiple URL directories</p>
+
+        <div class="form">
+            <label for="directories">URL Directories (one per line):</label>
+            <textarea id="directories" placeholder="https://example.com/images&#10;https://example.com/assets&#10;https://cdn.example.com/files"></textarea>
+
+            <label for="filename">Filename to check:</label>
+            <input type="text" id="filename" placeholder="logo.png" value="logo.png">
+
+            <button id="checkBtn" onclick="checkFiles()">Check Files</button>
+        </div>
+
+        <div id="results" class="results"></div>
+    </div>
+
+    <script>
+        function checkImage(url) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = url;
+            });
+        }
+
+        async function checkFileInDirectories(directories, filename) {
+            const results = [];
+            
+            for (const directory of directories) {
+                const baseUrl = directory.endsWith('/') ? directory : directory + '/';
+                const fullUrl = baseUrl + filename;
+                
+                const exists = await checkImage(fullUrl);
+                results.push({
+                    url: fullUrl,
+                    exists: exists
+                });
+            }
+            
+            return results;
+        }
+
+        async function checkFiles() {
+            const directoriesText = document.getElementById('directories').value.trim();
+            const filename = document.getElementById('filename').value.trim();
+            const resultsDiv = document.getElementById('results');
+            const checkBtn = document.getElementById('checkBtn');
+
+            if (!directoriesText || !filename) {
+                alert('Please provide both directories and filename');
+                return;
+            }
+
+            const directories = directoriesText.split('\n').filter(line => line.trim());
+            
+            if (directories.length === 0) {
+                alert('Please provide at least one directory');
+                return;
+            }
+
+            checkBtn.disabled = true;
+            resultsDiv.innerHTML = '<div class="loading">⏳ Checking files...</div>';
+
+            try {
+                const results = await checkFileInDirectories(directories, filename);
+                displayResults(results);
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="result-item not-exists">
+                    <div class="result-status">❌ Error: ${error.message}</div>
+                </div>`;
+            } finally {
+                checkBtn.disabled = false;
+            }
+        }
+
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            const existsCount = results.filter(r => r.exists).length;
+            const totalCount = results.length;
+
+            let html = '';
+            
+            results.forEach(result => {
+                const statusClass = result.exists ? 'exists' : 'not-exists';
+                const icon = result.exists ? '✓' : '✗';
+                const statusText = result.exists 
+                    ? `EXISTS (Status: ${result.status})` 
+                    : result.error 
+                        ? `NOT FOUND (Error: ${result.error})` 
+                        : `NOT FOUND (Status: ${result.status})`;
+                
+                html += `
+                    <div class="result-item ${statusClass}">
+                        <div class="result-url">${result.url}</div>
+                        <div class="result-status">${icon} ${statusText}</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                <div class="summary">
+                    <div class="summary-text">
+                        📊 Summary: ${existsCount} of ${totalCount} files found
+                    </div>
+                </div>
+            `;
+
+            resultsDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
